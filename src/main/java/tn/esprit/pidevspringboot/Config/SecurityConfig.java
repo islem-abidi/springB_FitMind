@@ -2,6 +2,7 @@ package tn.esprit.pidevspringboot.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -29,7 +30,7 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
 
     // 🔹 Injection du filtre JWT via le constructeur
-    public SecurityConfig(JwtFilter jwtFilter) {
+    public SecurityConfig(@Lazy JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
@@ -59,6 +60,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // 🔥 Ajout du filtre JWT ici
                 .build();
     }
+
 
     @Bean
     public UserDetailsService userDetailsService() {
