@@ -19,6 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
@@ -46,7 +49,7 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/send-verification-code",
                                 "/auth/verify-code",
-                                "/auth/users/me",
+                                "/auth/me",
                                 "/error",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -96,4 +99,14 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+    @Configuration
+    @SecurityScheme(
+            name = "BearerAuth",
+            type = SecuritySchemeType.HTTP,
+            scheme = "bearer",
+            bearerFormat = "JWT"
+    )
+    public class SwaggerConfig {
+    }
 }
+

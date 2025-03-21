@@ -7,5 +7,5 @@ import tn.esprit.pidevspringboot.Entities.User.Roletype;
 import java.util.Optional;
 
 public interface RoleRepository extends JpaRepository<Role, Integer> {
-    Optional<Role> findByRoleType(Roletype roleType); // ✅ Enlever "static"
+    Optional<Role> findByRoleType(Roletype roleType);
 }

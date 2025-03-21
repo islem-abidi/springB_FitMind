@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tn.esprit.pidevspringboot.Repository.TokenRepository;
 import tn.esprit.pidevspringboot.Service.JwtService;
 import java.io.IOException;
 
@@ -25,10 +26,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
-
-    public JwtFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    private final TokenRepository tokenRepository;
+    public JwtFilter(JwtService jwtService, UserDetailsService userDetailsService, TokenRepository tokenRepository) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.tokenRepository = tokenRepository;
     }
 
     @Override
@@ -44,17 +46,24 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         final String authHeader = request.getHeader(AUTHORIZATION);
-        String jwt = null;
-        String userEmail = null;
+        final String jwt;
+        final String userEmail;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            try {
-                userEmail = jwtService.extractUsername(jwt);
-            } catch (Exception e) {
-                logger.error("JWT extraction failed: {}");
-            }
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        jwt = authHeader.substring(7);
+
+        // 🔐 Vérifier si le token existe dans la BDD
+        var tokenOptional = tokenRepository.findByToken(jwt);
+        if (tokenOptional.isEmpty()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        userEmail = jwtService.extractUsername(jwt);
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);

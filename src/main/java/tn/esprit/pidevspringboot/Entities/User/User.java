@@ -152,6 +152,8 @@ public class User implements UserDetails {
 
     @ManyToMany
     private Set<Activite> activite = new HashSet<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Token> tokens = new ArrayList<>();
 
     // Implémentation des méthodes de UserDetails
     @Override

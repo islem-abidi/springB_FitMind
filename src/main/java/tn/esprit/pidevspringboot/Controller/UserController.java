@@ -3,6 +3,7 @@ package tn.esprit.pidevspringboot.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.pidevspringboot.Entities.User.Role;
+import tn.esprit.pidevspringboot.Entities.User.Token;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
+import tn.esprit.pidevspringboot.Repository.TokenRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.Service.JwtService;
 import tn.esprit.pidevspringboot.dto.EmailRequest;
@@ -23,15 +26,20 @@ import tn.esprit.pidevspringboot.dto.VerifyRequest;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
 @RequestMapping("/auth")
+@SecurityRequirement(name = "BearerAuth")
 public class UserController {
     private final Map<String, String> verificationCodes = new HashMap<>();
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -50,11 +58,6 @@ public class UserController {
         return "This is publicly accessible without needing authentication.";
     }
 
-    @Operation(summary = "Faire la registration", description = "Permet de faire le sign-up.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Utilisateur enregistré avec succès"),
-            @ApiResponse(responseCode = "400", description = "Erreur dans les données envoyées")
-    })
     @PostMapping("/registration")
     public ResponseEntity<Object> saveUser(@RequestBody UserRequest userRequest) {
         System.out.println("Requête POST reçue sur /auth/registration : " + userRequest.getEmail());
@@ -84,33 +87,26 @@ public class UserController {
 
         userRepository.save(user);
 
-        return ResponseEntity.ok("User was successfully registered with role ID " + userRole.getId_role());
-    }
-
-    @Operation(summary = "Envoyer le code de vérification", description = "Permet d'envoyer le code par email.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Code envoyé avec succès"),
-            @ApiResponse(responseCode = "400", description = "Erreur dans les données envoyées")
-    })
-    @PostMapping("/send-verification-code")
-    public ResponseEntity<Object> sendVerificationCode(@RequestBody EmailRequest request) {
-        String email = request.getEmail();
-
-        if (!email.matches("^[a-zA-Z]+\\.[a-zA-Z]+@esprit\\.tn$")) {
-            return ResponseEntity.status(400).body("Invalid email format. Use nom.prenom@esprit.tn");
-        }
-
+        // 🔹 Générer et envoyer le code de vérification automatiquement
         String verificationCode = String.format("%06d", new Random().nextInt(999999));
-
         try {
-            sendEmail(email, verificationCode);
-            verificationCodes.put(email, verificationCode);
-
-            return ResponseEntity.ok("Verification code sent to " + email);
+            sendEmail(user.getEmail(), verificationCode);
+            verificationCodes.put(user.getEmail(), verificationCode);
         } catch (MessagingException e) {
-            return ResponseEntity.status(500).body("Failed to send email.");
+            return ResponseEntity.status(500).body("User registered, but failed to send verification code.");
         }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User registered successfully. Verification code sent.");
+        response.put("email", user.getEmail());
+
+        return ResponseEntity.ok(response);
     }
+    @PostMapping("/verify-code")
+    public ResponseEntity<Object> verifyCode(@RequestBody VerifyRequest request){
+        return ResponseEntity.status(200).body(verificationCodes.get(request.getCode()));
+    }
+
 
     @Operation(summary = "Authentification", description = "Permet de se connecter.")
     @ApiResponses(value = {
@@ -132,20 +128,19 @@ public class UserController {
                 return ResponseEntity.status(401).body("Invalid credentials: Incorrect password");
             }
 
-            // ✅ Créer un UserDetails à partir de l'utilisateur pour le JWT
-            UserDetails userDetails = User.builder()
+            UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                     .username(user.getEmail())
                     .password(user.getPassword())
-                    .roles(user.getRole().getRoleType().name()) // 🔹 Convertit l'enum en String
+                    .roles(user.getRole().getRoleType().name()) // 🔹 Stocke le rôle
                     .build();
 
-            // ✅ Générer le JWT après connexion réussie
+            // ✅ Générer un nouveau token et supprimer l’ancien
             String token = jwtService.generateToken(userDetails);
 
-            // ✅ Retourner le JWT dans la réponse
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Login Successful!");
             response.put("token", token);
+            response.put("role", user.getRole().getRoleType()); // 🔥 Associe le rôle
 
             return ResponseEntity.ok(response);
 
@@ -154,6 +149,55 @@ public class UserController {
             return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
         }
     }
+
+    @Operation(summary = "Obtenir les informations de l'utilisateur connecté", description = "Nécessite un JWT valide.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Informations de l'utilisateur retournées"),
+            @ApiResponse(responseCode = "401", description = "Non authentifié")
+    })
+    @GetMapping("/me")
+    public ResponseEntity<Object> getUserInfo(@RequestHeader("Authorization") String token) {
+        try {
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7); // Supprime "Bearer " pour garder le token brut
+            }
+
+            String email = jwtService.extractUsername(token);
+            Optional<tn.esprit.pidevspringboot.Entities.User.User> userOptional = userRepository.findByEmail(email);
+
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.status(404).body("Utilisateur non trouvé");
+            }
+
+            tn.esprit.pidevspringboot.Entities.User.User user = userOptional.get();
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("email", user.getEmail());
+            userInfo.put("nom", user.getNom());
+            userInfo.put("prenom", user.getPrenom());
+            userInfo.put("role", user.getRole().getRoleType());
+
+            return ResponseEntity.ok(userInfo);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Token invalide ou expiré");
+        }
+    }
+    @Operation(summary = "Déconnexion", description = "Permet de se déconnecter et d'invalider le token.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Déconnexion réussie"),
+            @ApiResponse(responseCode = "400", description = "Token non valide")
+    })
+    @PostMapping("/logout")
+    public ResponseEntity<Object> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(400).body("Invalid token format");
+        }
+
+        String token = authHeader.substring(7);
+        jwtService.revokeToken(token);
+
+        return ResponseEntity.ok("User successfully logged out and token invalidated.");
+    }
+
 
     @Autowired
     public UserController(JavaMailSender mailSender) {
