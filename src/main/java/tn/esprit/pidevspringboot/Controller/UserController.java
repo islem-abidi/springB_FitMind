@@ -18,6 +18,7 @@ import tn.esprit.pidevspringboot.Entities.User.Token;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.TokenRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
+import tn.esprit.pidevspringboot.Service.IUserService;
 import tn.esprit.pidevspringboot.Service.JwtService;
 import tn.esprit.pidevspringboot.dto.EmailRequest;
 import tn.esprit.pidevspringboot.dto.LoginRequest;
@@ -43,7 +44,8 @@ public class UserController {
 
     @Autowired
     private RoleRepository roleRepository;
-
+    @Autowired
+    private IUserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -212,4 +214,40 @@ public class UserController {
         helper.setText("Your verification code is: " + code);
         mailSender.send(message);
     }
+
+    /// ///////////////CRUD : delete , update , get User
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
+        return ResponseEntity.ok(userService.updateUser(id, userRequest));
+    }
+
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok("User deleted");
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+    @Operation(summary = "Archiver un utilisateur")
+    @PutMapping("/archive/{idUser}")
+    public void archiveUser(@PathVariable Long idUser) {
+        userService.archiveUser(idUser);
+    }
+    @PutMapping("/restore/{id}")
+    public ResponseEntity<String> restoreUser(@PathVariable Long id) {
+        userService.restoreUser(id);
+        return ResponseEntity.ok("Utilisateur restauré avec succès");
+    }
+
+
+
 }

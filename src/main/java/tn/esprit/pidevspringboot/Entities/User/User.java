@@ -191,6 +191,17 @@ public class User implements UserDetails {
         return true; // Les identifiants ne sont pas expirés
     }
 
+    @Column(name = "archived")
+    private boolean archived = false;
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
+
     @Override
     public boolean isEnabled() {
         return true; // L'utilisateur est activé

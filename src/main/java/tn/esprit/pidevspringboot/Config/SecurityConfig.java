@@ -55,9 +55,13 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/auth/token/{email}",
-                                "/reclamations/**"
-                        ).permitAll()  // 🔓 Routes accessibles sans authentification
-                        .anyRequest().authenticated() // 🔒 Sécuriser toutes les autres routes
+                                "/auth/update/{id}",
+                                "/auth/delete/{id}",
+                                "/reclamations/**",
+                                "/auth/archive/{id}",
+                                "/auth/restore/{id}"
+                        ).permitAll()  //  Routes accessibles sans authentification
+                        .anyRequest().authenticated() //  Sécuriser toutes les autres routes
                 )
                 .authenticationProvider(authenticationProvider()) // 🔹 Utilisation de l'authenticationProvider
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // 🔥 Ajout du filtre JWT ici

@@ -18,8 +18,8 @@ public class ReclamationRequest {
     private Date dateResolution;
     private String action;
 
-    public Integer getIdUser() {
-        return idUser;
+    public Long getIdUser() {
+        return Long.valueOf(idUser);
     }
 
     public void setIdUser(Integer idUser) {
