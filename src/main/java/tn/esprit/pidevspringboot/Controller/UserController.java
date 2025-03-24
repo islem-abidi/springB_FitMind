@@ -5,30 +5,27 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.pidevspringboot.Entities.User.Role;
-import tn.esprit.pidevspringboot.Entities.User.Token;
+import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.TokenRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.Service.IUserService;
 import tn.esprit.pidevspringboot.Service.JwtService;
-import tn.esprit.pidevspringboot.dto.EmailRequest;
 import tn.esprit.pidevspringboot.dto.LoginRequest;
 import tn.esprit.pidevspringboot.dto.UserRequest;
+import tn.esprit.pidevspringboot.dto.UserResponse;
 import tn.esprit.pidevspringboot.dto.VerifyRequest;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -55,11 +52,7 @@ public class UserController {
     @Autowired
     private JwtService jwtService;
 
-    @GetMapping("/")
-    public String goHome() {
-        return "This is publicly accessible without needing authentication.";
-    }
-
+  
     @PostMapping("/registration")
     public ResponseEntity<Object> saveUser(@RequestBody UserRequest userRequest) {
         System.out.println("Requête POST reçue sur /auth/registration : " + userRequest.getEmail());
@@ -228,12 +221,13 @@ public class UserController {
         return ResponseEntity.ok("User deleted");
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<?> getAllUsers() {
+    @GetMapping("/get/all")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @GetMapping("/{id}")
+
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }

@@ -59,7 +59,9 @@ public class SecurityConfig {
                                 "/auth/delete/{id}",
                                 "/reclamations/**",
                                 "/auth/archive/{id}",
-                                "/auth/restore/{id}"
+                                "/auth/restore/{id}",
+                                "/auth/get/{id}",
+                                "/auth/get/all"
                         ).permitAll()  //  Routes accessibles sans authentification
                         .anyRequest().authenticated() //  Sécuriser toutes les autres routes
                 )

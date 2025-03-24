@@ -11,9 +11,12 @@ import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.dto.UserRequest;
 import lombok.RequiredArgsConstructor;
+import tn.esprit.pidevspringboot.dto.UserResponse;
+
 import java.util.Optional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImplementation implements IUserService {
@@ -57,9 +60,27 @@ private RoleRepository roleRepository;
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAllByArchivedFalse()
+                .stream()
+                .map(this::mapToUserResponse)
+                .collect(Collectors.toList());
     }
+
+    private UserResponse mapToUserResponse(User user) {
+        return new UserResponse(
+                user.getIdUser(),
+                user.getNom(),
+                user.getPrenom(),
+                user.getEmail(),
+                user.getDateNaissance(),
+                user.getSexe(),
+                user.getNumeroDeTelephone(),
+                user.getPhotoProfil(),
+                user.getRole() != null ? user.getRole().getRoleType().name() : null
+        );
+    }
+
 
     @Override
     public User getUserById(Long id) {
