@@ -17,14 +17,19 @@ public class RendezVous {
 
     @ManyToOne
     @JoinColumn(name = "id_user", nullable = false)
-    private User user;
+    private User nutritioniste;
+
+
+    @ManyToOne
+    @JoinColumn(name = "id_user", nullable = false)
+    private User etudiant;
+
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateHeure;
 
     private int duree;
     private String remarque;
-    private boolean rappel;
 
     public Long getIdRendezVous() {
         return idRendezVous;
@@ -34,25 +39,7 @@ public class RendezVous {
         this.idRendezVous = idRendezVous;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        RendezVous that = (RendezVous) o;
-        return duree == that.duree && rappel == that.rappel && Objects.equals(idRendezVous, that.idRendezVous) && Objects.equals(user, that.user) && Objects.equals(dateHeure, that.dateHeure) && Objects.equals(remarque, that.remarque);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(idRendezVous, user, dateHeure, duree, remarque, rappel);
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 
     public Date getDateHeure() {
         return dateHeure;
@@ -78,11 +65,11 @@ public class RendezVous {
         this.remarque = remarque;
     }
 
-    public boolean isRappel() {
-        return rappel;
+
+    public User getUser() {
+        return null;
     }
 
-    public void setRappel(boolean rappel) {
-        this.rappel = rappel;
+    public void setUser(User user) {
     }
 }

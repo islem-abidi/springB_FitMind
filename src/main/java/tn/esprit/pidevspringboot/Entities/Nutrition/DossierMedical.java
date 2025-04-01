@@ -17,13 +17,15 @@ public class DossierMedical {
     private User user;
 
     private String maladies;
-    private String allergies;
     private String objectifSante;
     private String traitements;
-    private float imc;
     private float tailles;
     private float poids;
+    //private float imc;
 
+
+    @Enumerated(EnumType.STRING)
+    private Allergies Allergies;
     @Enumerated(EnumType.STRING)
     private GroupSanguin groupeSanguin;
 
@@ -51,28 +53,12 @@ public class DossierMedical {
         this.maladies = maladies;
     }
 
-    public String getAllergies() {
-        return allergies;
-    }
-
-    public void setAllergies(String allergies) {
-        this.allergies = allergies;
-    }
-
     public String getObjectifSante() {
         return objectifSante;
     }
 
     public void setObjectifSante(String objectifSante) {
         this.objectifSante = objectifSante;
-    }
-
-    public float getImc() {
-        return imc;
-    }
-
-    public void setImc(float imc) {
-        this.imc = imc;
     }
 
     public String getTraitements() {
