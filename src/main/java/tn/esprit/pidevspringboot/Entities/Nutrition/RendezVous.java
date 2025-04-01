@@ -16,12 +16,11 @@ public class RendezVous {
     private Long idRendezVous;
 
     @ManyToOne
-    @JoinColumn(name = "id_user", nullable = false)
+    @JoinColumn(name = "nutritioniste_id", nullable = false)
     private User nutritioniste;
 
-
     @ManyToOne
-    @JoinColumn(name = "id_user", nullable = false)
+    @JoinColumn(name = "etudiant_id", nullable = false)
     private User etudiant;
 
 
