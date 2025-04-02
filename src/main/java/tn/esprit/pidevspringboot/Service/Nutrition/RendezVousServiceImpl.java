@@ -1,6 +1,6 @@
 package tn.esprit.pidevspringboot.Service.Nutrition;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprit.pidevspringboot.Entities.Nutrition.RendezVous;
@@ -8,15 +8,19 @@ import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Repository.Nutrition.RendezVousRepository;
 import tn.esprit.pidevspringboot.Repository.User.UserRepository;
 
-import java.util.List;
 
+import java.util.List;
+import java.util.Optional;
+
+@AllArgsConstructor
 @Service
 public class RendezVousServiceImpl implements IRendezVousServices {
 
     @Autowired
-    RendezVousRepository rendezVousRepository;
+    private RendezVousRepository rendezVousRepository;
+
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Override
     public List<RendezVous> retrieveAllRendezVous() {
@@ -25,51 +29,58 @@ public class RendezVousServiceImpl implements IRendezVousServices {
 
     @Override
     public RendezVous retrieveRendezVous(Long idRendezVous) {
-        return rendezVousRepository.findById(idRendezVous)
-                .orElseThrow(() -> new IllegalArgumentException("Rendez-vous non trouvé avec l'ID: " + idRendezVous));
+        return rendezVousRepository.findById(idRendezVous).orElse(null);
     }
 
     @Override
     public RendezVous addRendezVous(RendezVous rendezVous) {
-        // Verify if the student (etudiant) exists
+        // Vérifier que l'étudiant est obligatoire
+        if (rendezVous.getEtudiant() == null || rendezVous.getEtudiant().getIdUser() == null) {
+            throw new IllegalArgumentException("L'étudiant est obligatoire.");
+        }
+        // Récupérer l'étudiant depuis la base de données
         User etudiant = userRepository.findById(rendezVous.getEtudiant().getIdUser())
-                .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
-
-        // Associate the student with the appointment
-        rendezVous.setEtudiant(etudiant);
-
-        // Check if a nutritionist is provided
-        if (rendezVous.getNutritioniste() != null) {
+                .orElseThrow(() -> new IllegalArgumentException("Étudiant non trouvé."));
+        // Vérifier si le nutritionniste est fourni (optionnel)
+        if (rendezVous.getNutritioniste() != null && rendezVous.getNutritioniste().getIdUser() != null) {
             User nutritioniste = userRepository.findById(rendezVous.getNutritioniste().getIdUser())
-                    .orElseThrow(() -> new RuntimeException("Nutritionniste non trouvé"));
+                    .orElseThrow(() -> new IllegalArgumentException("Nutritionniste non trouvé."));
             rendezVous.setNutritioniste(nutritioniste);
         }
-
-        // Save the appointment to the database
+        // Vérification de la durée (entre 30 et 120 minutes)
+        if (rendezVous.getDuree() < 30 || rendezVous.getDuree() > 120) {
+            throw new IllegalArgumentException("La durée du rendez-vous doit être entre 30 et 120 minutes.");
+        }
+        // Vérification que la remarque n'est pas vide
+        if (rendezVous.getRemarque() == null || rendezVous.getRemarque().isEmpty()) {
+            throw new IllegalArgumentException("La remarque est obligatoire.");
+        }
+        // Affecter l'étudiant récupéré
+        rendezVous.setEtudiant(etudiant);
+        // Sauvegarder le rendez-vous dans la base de données
         return rendezVousRepository.save(rendezVous);
     }
-
 
 
     @Override
     public RendezVous updateRendezVous(RendezVous rendezVous) {
         if (rendezVous == null || rendezVous.getIdRendezVous() == null) {
-            throw new IllegalArgumentException("Le rendez-vous ou son ID ne peut pas être null.");
+            throw new IllegalArgumentException("Le RendezVous ou son ID ne peut pas être null.");
         }
-
-        // Correction ici : on utilise existsById pour vérifier l'existence du rendez-vous
         if (!rendezVousRepository.existsById(rendezVous.getIdRendezVous())) {
-            throw new IllegalArgumentException("Impossible de mettre à jour : rendez-vous inexistant.");
+            throw new RuntimeException("RendezVous avec l'ID " + rendezVous.getIdRendezVous() + " non trouvé.");
         }
-
         return rendezVousRepository.save(rendezVous);
     }
 
     @Override
     public RendezVous archiveRendezVous(Long idRendezVous) {
         RendezVous rendezVous = retrieveRendezVous(idRendezVous);
-        // Marquer le rendez-vous comme archivé
-        rendezVous.setArchived(true);
-        return rendezVousRepository.save(rendezVous);
+        if (rendezVous != null) {
+            rendezVous.setArchived(true);
+            return rendezVousRepository.save(rendezVous);
+        } else {
+            throw new RuntimeException("RendezVous avec l'ID " + idRendezVous + " non trouvé.");
+        }
     }
 }

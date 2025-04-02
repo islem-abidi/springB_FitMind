@@ -28,11 +28,9 @@ public class DossierMedical {
     @NotBlank(message = "Le champ traitements est obligatoire.")
     private String traitements;
 
-    @Min(value = 30, message = "La taille doit être supérieure ou égale à 30 cm.")
     @Max(value = 250, message = "La taille ne doit pas dépasser 250 cm.")
     private float tailles;
 
-    @Min(value = 35, message = "Le poids doit être supérieur ou égal à 35 kg.")
     @Max(value = 300, message = "Le poids ne doit pas dépasser 300 kg.")
     private float poids;
 

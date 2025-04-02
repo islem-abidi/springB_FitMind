@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.pidevspringboot.Entities.Nutrition.RendezVous;
 import tn.esprit.pidevspringboot.Service.Nutrition.IRendezVousServices;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -16,28 +17,38 @@ import java.util.List;
 public class RendezVousController {
 
     private final IRendezVousServices rendezVousServices;
+    private static final Logger logger = LoggerFactory.getLogger(RendezVousController.class);
 
-    // Injection de dépendance via le constructeur
     public RendezVousController(IRendezVousServices rendezVousServices) {
         this.rendezVousServices = rendezVousServices;
     }
 
     @GetMapping("/retrieveAllRendezVous")
     public ResponseEntity<List<RendezVous>> getAllRendezVous() {
-        return ResponseEntity.ok(rendezVousServices.retrieveAllRendezVous());
+        List<RendezVous> rendezVousList = rendezVousServices.retrieveAllRendezVous();
+        return ResponseEntity.ok(rendezVousList);
     }
 
     @GetMapping("/retrieveRendezVous/{id}")
     public ResponseEntity<RendezVous> getRendezVous(@PathVariable Long id) {
-        return ResponseEntity.ok(rendezVousServices.retrieveRendezVous(id));
+        try {
+            RendezVous rendezVous = rendezVousServices.retrieveRendezVous(id);
+            return ResponseEntity.ok(rendezVous);
+        } catch (Exception e) {
+            logger.error("Erreur lors de la récupération du rendez-vous avec ID: " + id, e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
-    private static final Logger logger = LoggerFactory.getLogger(RendezVousController.class);
 
     @PostMapping("/addRendezVous")
-    public ResponseEntity<?> addRendezVous(@RequestBody RendezVous rendezVous) {
+    public ResponseEntity<?> addRendezVous(@Valid @RequestBody RendezVous rendezVous) {
         try {
             RendezVous createdRendezVous = rendezVousServices.addRendezVous(rendezVous);
-            return ResponseEntity.ok(createdRendezVous);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdRendezVous);
+        } catch (IllegalArgumentException e) {
+            logger.error("Erreur de validation des données : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Erreur de validation : " + e.getMessage());
         } catch (Exception e) {
             logger.error("Erreur lors de la création du rendez-vous", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -46,19 +57,26 @@ public class RendezVousController {
     }
 
     @PutMapping("/updateRendezVous/{id}")
-    public ResponseEntity<RendezVous> updateRendezVous(@PathVariable Long id, @RequestBody RendezVous rendezVous) {
-        rendezVous.setIdRendezVous(id);
-        return ResponseEntity.ok(rendezVousServices.updateRendezVous(rendezVous));
+    public ResponseEntity<?> updateRendezVous(@PathVariable Long id, @Valid @RequestBody RendezVous rendezVous) {
+        try {
+            rendezVous.setIdRendezVous(id);
+            RendezVous updatedRendezVous = rendezVousServices.updateRendezVous(rendezVous);
+            return ResponseEntity.ok(updatedRendezVous);
+        } catch (Exception e) {
+            logger.error("Erreur lors de la mise à jour du rendez-vous", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mise à jour échouée: " + e.getMessage());
+        }
     }
 
     @PutMapping("/archiveRendezVous/{id}")
-    public ResponseEntity<RendezVous> archiveRendezVous(@PathVariable Long id) {
+    public ResponseEntity<?> archiveRendezVous(@PathVariable Long id) {
         try {
             RendezVous updatedRendezVous = rendezVousServices.archiveRendezVous(id);
             return ResponseEntity.ok(updatedRendezVous);
         } catch (Exception e) {
+            logger.error("Erreur lors de l'archivage du rendez-vous", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+                    .body("Erreur lors de l'archivage du rendez-vous : " + e.getMessage());
         }
     }
 }
