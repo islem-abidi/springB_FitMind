@@ -1,12 +1,9 @@
 package tn.esprit.pidevspringboot.Entities.Nutrition;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
+import tn.esprit.pidevspringboot.Entities.ActiviteSportive.Status;
 import tn.esprit.pidevspringboot.Entities.User.User;
 
 import java.util.Date;
@@ -38,6 +35,9 @@ public class RendezVous {
     @NotBlank(message = "Le champ remarque est obligatoire.")
     @Size(max = 500, message = "La remarque ne doit pas dépasser 500 caractères.")
     private String remarque;
+
+    @Enumerated(EnumType.STRING)
+    private statu statu = tn.esprit.pidevspringboot.Entities.Nutrition.statu.EN_COURS;
 
     private boolean archived = false;
 
@@ -97,4 +97,19 @@ public class RendezVous {
         this.remarque = remarque;
     }
 
+    public boolean isRappel() {
+        return rappel;
+    }
+
+    public void setRappel(boolean rappel) {
+        this.rappel = rappel;
+    }
+
+    public statu getStatu() {
+        return statu;
+    }
+
+    public void setStatu(statu statu) {
+        this.statu = statu;
+    }
 }
