@@ -31,16 +31,24 @@ public class RendezVousServiceImpl implements IRendezVousServices {
 
     @Override
     public RendezVous addRendezVous(RendezVous rendezVous) {
-        // Vérifiez si l'utilisateur associé au rendez-vous existe dans la base de données
-        User user = userRepository.findById(rendezVous.getUser().getIdUser())
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        // Verify if the student (etudiant) exists
+        User etudiant = userRepository.findById(rendezVous.getEtudiant().getIdUser())
+                .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
 
-        // Associez l'utilisateur à l'entité RendezVous
-        rendezVous.setUser(user);
+        // Associate the student with the appointment
+        rendezVous.setEtudiant(etudiant);
 
-        // Ajoutez le rendez-vous à la base de données
+        // Check if a nutritionist is provided
+        if (rendezVous.getNutritioniste() != null) {
+            User nutritioniste = userRepository.findById(rendezVous.getNutritioniste().getIdUser())
+                    .orElseThrow(() -> new RuntimeException("Nutritionniste non trouvé"));
+            rendezVous.setNutritioniste(nutritioniste);
+        }
+
+        // Save the appointment to the database
         return rendezVousRepository.save(rendezVous);
     }
+
 
 
     @Override
@@ -54,6 +62,14 @@ public class RendezVousServiceImpl implements IRendezVousServices {
             throw new IllegalArgumentException("Impossible de mettre à jour : rendez-vous inexistant.");
         }
 
+        return rendezVousRepository.save(rendezVous);
+    }
+
+    @Override
+    public RendezVous archiveRendezVous(Long idRendezVous) {
+        RendezVous rendezVous = retrieveRendezVous(idRendezVous);
+        // Marquer le rendez-vous comme archivé
+        rendezVous.setArchived(true);
         return rendezVousRepository.save(rendezVous);
     }
 }

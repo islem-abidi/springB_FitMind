@@ -1,6 +1,7 @@
 package tn.esprit.pidevspringboot.Entities.Nutrition;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import tn.esprit.pidevspringboot.Entities.User.User;
 
@@ -16,18 +17,42 @@ public class DossierMedical {
     @JoinColumn(name = "id_user", nullable = false)
     private User user;
 
+    @NotBlank(message = "Le champ maladies est obligatoire.")
+    @Size(max = 255, message = "Le champ maladies ne doit pas dépasser 255 caractères.")
     private String maladies;
+
+    @NotBlank(message = "Le champ objectif santé est obligatoire.")
+    @Size(max = 255, message = "Le champ objectif santé ne doit pas dépasser 255 caractères.")
     private String objectifSante;
+
+    @NotBlank(message = "Le champ traitements est obligatoire.")
     private String traitements;
+
+    @Min(value = 30, message = "La taille doit être supérieure ou égale à 30 cm.")
+    @Max(value = 250, message = "La taille ne doit pas dépasser 250 cm.")
     private float tailles;
+
+    @Min(value = 35, message = "Le poids doit être supérieur ou égal à 35 kg.")
+    @Max(value = 300, message = "Le poids ne doit pas dépasser 300 kg.")
     private float poids;
-    //private float imc;
-
 
     @Enumerated(EnumType.STRING)
-    private Allergies Allergies;
-    @Enumerated(EnumType.STRING)
+    @NotNull(message = "Le groupe sanguin est obligatoire.")
     private GroupSanguin groupeSanguin;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "L'Allergie est obligatoire.")
+    private Allergies Allergies;
+
+    public Allergies getAllergies() {
+        return Allergies;
+    }
+
+    public void setAllergies(Allergies allergies) {
+        Allergies = allergies;
+    }
+
+    private boolean archived = true;
 
     public Long getIdDossier() {
         return idDossier;
@@ -91,5 +116,13 @@ public class DossierMedical {
 
     public void setGroupeSanguin(GroupSanguin groupeSanguin) {
         this.groupeSanguin = groupeSanguin;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 }

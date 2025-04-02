@@ -39,17 +39,26 @@ public class RendezVousController {
             RendezVous createdRendezVous = rendezVousServices.addRendezVous(rendezVous);
             return ResponseEntity.ok(createdRendezVous);
         } catch (Exception e) {
-            logger.error("Erreur lors de la création du rendez-vous", e);  // Log de l'erreur
+            logger.error("Erreur lors de la création du rendez-vous", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Erreur lors de la création du rendez-vous : " + e.getMessage());
         }
     }
 
-
-
     @PutMapping("/updateRendezVous/{id}")
     public ResponseEntity<RendezVous> updateRendezVous(@PathVariable Long id, @RequestBody RendezVous rendezVous) {
         rendezVous.setIdRendezVous(id);
         return ResponseEntity.ok(rendezVousServices.updateRendezVous(rendezVous));
+    }
+
+    @PutMapping("/archiveRendezVous/{id}")
+    public ResponseEntity<RendezVous> archiveRendezVous(@PathVariable Long id) {
+        try {
+            RendezVous updatedRendezVous = rendezVousServices.archiveRendezVous(id);
+            return ResponseEntity.ok(updatedRendezVous);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 }

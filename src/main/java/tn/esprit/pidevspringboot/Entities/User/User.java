@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import tn.esprit.pidevspringboot.Entities.Abonnement.Abonnement;
 import tn.esprit.pidevspringboot.Entities.ActiviteSportive.Activite;
+import tn.esprit.pidevspringboot.Entities.Nutrition.RendezVous;
 
 import java.util.*;
 

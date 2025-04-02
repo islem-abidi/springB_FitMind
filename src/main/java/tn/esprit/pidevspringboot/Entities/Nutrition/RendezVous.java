@@ -16,8 +16,9 @@ public class RendezVous {
     private Long idRendezVous;
 
     @ManyToOne
-    @JoinColumn(name = "nutritioniste_id", nullable = false)
+    @JoinColumn(name = "nutritioniste_id", nullable = true)
     private User nutritioniste;
+
 
     @ManyToOne
     @JoinColumn(name = "etudiant_id", nullable = false)
@@ -29,25 +30,19 @@ public class RendezVous {
 
     private int duree;
     private String remarque;
-
+//    private boolean rappel;
     public Long getIdRendezVous() {
         return idRendezVous;
     }
-
     public void setIdRendezVous(Long idRendezVous) {
         this.idRendezVous = idRendezVous;
     }
-
-
-
     public Date getDateHeure() {
         return dateHeure;
     }
-
     public void setDateHeure(Date dateHeure) {
         this.dateHeure = dateHeure;
     }
-
     public int getDuree() {
         return duree;
     }
@@ -64,11 +59,31 @@ public class RendezVous {
         this.remarque = remarque;
     }
 
-
-    public User getUser() {
-        return null;
+    public User getNutritioniste() {
+        return nutritioniste;
     }
 
-    public void setUser(User user) {
+    public void setNutritioniste(User nutritioniste) {
+        this.nutritioniste = nutritioniste;
     }
+
+    public User getEtudiant() {
+        return etudiant;
+    }
+
+    public void setEtudiant(User etudiant) {
+        this.etudiant = etudiant;
+    }
+
+    private boolean archived = false; // Initialisé à false par défaut
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
+    }
+
+
 }

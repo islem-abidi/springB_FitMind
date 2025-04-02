@@ -8,4 +8,6 @@ public interface IRendezVousServices {
     RendezVous retrieveRendezVous(Long idRendezVous);
     RendezVous addRendezVous(RendezVous rendezVous);
     RendezVous updateRendezVous(RendezVous rendezVous);
+    RendezVous archiveRendezVous(Long idRendezVous);
+
 }
