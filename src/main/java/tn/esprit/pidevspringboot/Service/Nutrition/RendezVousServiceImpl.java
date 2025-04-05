@@ -24,8 +24,9 @@ public class RendezVousServiceImpl implements IRendezVousServices {
 
     @Override
     public List<RendezVous> retrieveAllRendezVous() {
-        return rendezVousRepository.findAll();
+        return rendezVousRepository.findByArchivedFalse();
     }
+
 
     @Override
     public RendezVous retrieveRendezVous(Long idRendezVous) {
@@ -34,32 +35,33 @@ public class RendezVousServiceImpl implements IRendezVousServices {
 
     @Override
     public RendezVous addRendezVous(RendezVous rendezVous) {
-        // Vérifier que l'étudiant est obligatoire
-        if (rendezVous.getEtudiant() == null || rendezVous.getEtudiant().getIdUser() == null) {
-            throw new IllegalArgumentException("L'étudiant est obligatoire.");
-        }
-        // Récupérer l'étudiant depuis la base de données
+        validateRendezVousData(rendezVous);
+
         User etudiant = userRepository.findById(rendezVous.getEtudiant().getIdUser())
                 .orElseThrow(() -> new IllegalArgumentException("Étudiant non trouvé."));
-        // Vérifier si le nutritionniste est fourni (optionnel)
+
+        rendezVous.setEtudiant(etudiant);
+
         if (rendezVous.getNutritioniste() != null && rendezVous.getNutritioniste().getIdUser() != null) {
             User nutritioniste = userRepository.findById(rendezVous.getNutritioniste().getIdUser())
                     .orElseThrow(() -> new IllegalArgumentException("Nutritionniste non trouvé."));
             rendezVous.setNutritioniste(nutritioniste);
         }
-        // Vérification de la durée (entre 30 et 120 minutes)
-        if (rendezVous.getDuree() < 30 || rendezVous.getDuree() > 120) {
-            throw new IllegalArgumentException("La durée du rendez-vous doit être entre 30 et 120 minutes.");
-        }
-        // Vérification que la remarque n'est pas vide
-        if (rendezVous.getRemarque() == null || rendezVous.getRemarque().isEmpty()) {
-            throw new IllegalArgumentException("La remarque est obligatoire.");
-        }
-        // Affecter l'étudiant récupéré
-        rendezVous.setEtudiant(etudiant);
-        // Sauvegarder le rendez-vous dans la base de données
+
         return rendezVousRepository.save(rendezVous);
     }
+
+    private void validateRendezVousData(RendezVous rendezVous) {
+        if (rendezVous.getEtudiant() == null || rendezVous.getEtudiant().getIdUser() == null)
+            throw new IllegalArgumentException("L'étudiant est obligatoire.");
+        if (rendezVous.getDateHeure() == null)
+            throw new IllegalArgumentException("La date/heure est obligatoire.");
+        if (rendezVous.getDuree() < 30 || rendezVous.getDuree() > 120)
+            throw new IllegalArgumentException("La durée doit être entre 30 et 120 minutes.");
+        if (rendezVous.getRemarque() == null || rendezVous.getRemarque().isEmpty())
+            throw new IllegalArgumentException("La remarque est obligatoire.");
+    }
+
 
 
     @Override

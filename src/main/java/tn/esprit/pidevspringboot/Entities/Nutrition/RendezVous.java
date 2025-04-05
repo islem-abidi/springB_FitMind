@@ -2,14 +2,17 @@ package tn.esprit.pidevspringboot.Entities.Nutrition;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.Data;
-import tn.esprit.pidevspringboot.Entities.ActiviteSportive.Status;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import tn.esprit.pidevspringboot.Entities.User.User;
 
 import java.util.Date;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
 public class RendezVous {
 
     @Id
@@ -17,37 +20,31 @@ public class RendezVous {
     private Long idRendezVous;
 
     @ManyToOne
-    @JoinColumn(name = "nutritioniste_id", nullable = true)
+    @JoinColumn(name = "nutritioniste_id")
     private User nutritioniste;
 
-    private boolean rappel;
-    @ManyToOne
-    @JoinColumn(name = "etudiant_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "etudiant_id")
     private User etudiant;
 
     @Temporal(TemporalType.TIMESTAMP)
+    @NotNull(message = "La date et l'heure sont obligatoires.")
     private Date dateHeure;
 
-    @Min(value = 30, message = "La durée minimale d'un rendez-vous est de 30 minutes.")
-    @Max(value = 120, message = "La durée maximale d'un rendez-vous est de 120 minutes.")
+    @Min(value = 30, message = "La durée minimale est de 30 minutes.")
+    @Max(value = 120, message = "La durée maximale est de 120 minutes.")
     private int duree;
 
     @NotBlank(message = "Le champ remarque est obligatoire.")
     @Size(max = 500, message = "La remarque ne doit pas dépasser 500 caractères.")
     private String remarque;
 
+    private boolean rappel = false;
+
     @Enumerated(EnumType.STRING)
-    private statu statu = tn.esprit.pidevspringboot.Entities.Nutrition.statu.EN_COURS;
+    private StatutRendezVous statut = StatutRendezVous.EN_COURS;
 
     private boolean archived = false;
-
-    public boolean isArchived() {
-        return archived;
-    }
-
-    public void setArchived(boolean archived) {
-        this.archived = archived;
-    }
 
     public Long getIdRendezVous() {
         return idRendezVous;
@@ -105,11 +102,19 @@ public class RendezVous {
         this.rappel = rappel;
     }
 
-    public statu getStatu() {
-        return statu;
+    public StatutRendezVous getStatut() {
+        return statut;
     }
 
-    public void setStatu(statu statu) {
-        this.statu = statu;
+    public void setStatut(StatutRendezVous statut) {
+        this.statut = statut;
+    }
+
+    public boolean isArchived() {
+        return archived;
+    }
+
+    public void setArchived(boolean archived) {
+        this.archived = archived;
     }
 }

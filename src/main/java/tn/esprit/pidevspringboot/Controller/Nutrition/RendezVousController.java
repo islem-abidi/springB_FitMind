@@ -43,16 +43,13 @@ public class RendezVousController {
     @PostMapping("/addRendezVous")
     public ResponseEntity<?> addRendezVous(@Valid @RequestBody RendezVous rendezVous) {
         try {
-            RendezVous createdRendezVous = rendezVousServices.addRendezVous(rendezVous);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdRendezVous);
+            RendezVous saved = rendezVousServices.addRendezVous(rendezVous);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (IllegalArgumentException e) {
-            logger.error("Erreur de validation des données : " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Erreur de validation : " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             logger.error("Erreur lors de la création du rendez-vous", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erreur lors de la création du rendez-vous : " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Erreur serveur.");
         }
     }
 

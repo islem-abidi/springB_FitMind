@@ -1,6 +1,6 @@
 package tn.esprit.pidevspringboot.Entities.Nutrition;
 
-public enum statu {
+public enum StatutRendezVous {
     EN_COURS,
     ACCEPTE,
     REFUSE

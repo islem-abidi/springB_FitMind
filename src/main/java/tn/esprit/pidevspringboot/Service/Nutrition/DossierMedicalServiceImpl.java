@@ -23,13 +23,22 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
 
     @Override
     public List<DossierMedical> retrieveAllDossiers() {
-        return dossierMedicalRepository.findAll();
+        return dossierMedicalRepository.findByArchivedFalse();
     }
+
 
     @Override
     public DossierMedical retrieveDossier(Long idDossier) {
-        return dossierMedicalRepository.findById(idDossier).orElse(null);
+        DossierMedical dossier = dossierMedicalRepository.findById(idDossier)
+                .orElseThrow(() -> new RuntimeException("Dossier non trouvé avec l'ID : " + idDossier));
+
+        if (Boolean.TRUE.equals(dossier.getArchived())) {
+            throw new RuntimeException("Ce dossier est archivé et ne peut pas être consulté.");
+        }
+
+        return dossier;
     }
+
 
     @Override
     public DossierMedical addDossier(DossierMedical dossierMedical) {

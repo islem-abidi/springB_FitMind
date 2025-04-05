@@ -50,7 +50,7 @@ public class DossierMedical {
         Allergies = allergies;
     }
 
-    private boolean archived = true;
+    private Boolean archived = false;
 
     public Long getIdDossier() {
         return idDossier;
@@ -120,7 +120,11 @@ public class DossierMedical {
         return archived;
     }
 
-    public void setArchived(boolean archived) {
+    public void setArchived(Boolean archived) {
         this.archived = archived;
+    }
+
+    public Boolean getArchived() {
+        return archived;
     }
 }
