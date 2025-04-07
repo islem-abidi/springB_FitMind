@@ -51,8 +51,6 @@ public class Reclamation {
     @Column(name = "date_resolution")
     private Date dateResolution;
 
-    @Column(name = "action", columnDefinition = "TEXT")
-    private String action;
     @Column(name = "archived", nullable = false)
     private boolean archived = false; //false aala khatr par defaut mhich archivé
 

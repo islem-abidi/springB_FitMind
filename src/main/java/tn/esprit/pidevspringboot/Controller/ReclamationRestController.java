@@ -4,11 +4,13 @@ package tn.esprit.pidevspringboot.Controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.ResponseEntity;
 import tn.esprit.pidevspringboot.Entities.User.Reclamation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
+import tn.esprit.pidevspringboot.Service.BadWordFilterService;
 import tn.esprit.pidevspringboot.Service.IReclamationService;
 import tn.esprit.pidevspringboot.dto.ReclamationRequest;
 
@@ -22,6 +24,9 @@ public class ReclamationRestController {
     @Autowired
     private IReclamationService reclamationService;
     @Autowired
+    private BadWordFilterService badWordFilterService;
+
+    @Autowired
     private UserRepository userRepository;
     @Operation(summary = "Ajouter une réclamation", description = "Permet d'ajouter une nouvelle réclamation en spécifiant uniquement l'ID de l'utilisateur.")
     @ApiResponses(value = {
@@ -29,11 +34,16 @@ public class ReclamationRestController {
             @ApiResponse(responseCode = "400", description = "Erreur dans les données envoyées")
     })
     @PostMapping("/add")
-    public Reclamation addReclamation(@RequestBody ReclamationRequest reclamationDTO) {
+    public ResponseEntity<?> addReclamation(@RequestBody ReclamationRequest reclamationDTO) {
+        if (badWordFilterService.containsBadWords(reclamationDTO.getDescription())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("❌ Description invalide : langage inapproprié détecté.");
+        }
+
         User user = userRepository.findById(reclamationDTO.getIdUser())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Créer une nouvelle réclamation
         Reclamation reclamation = new Reclamation();
         reclamation.setUser(user);
         reclamation.setDateReclamation(reclamationDTO.getDateReclamation());
@@ -41,10 +51,10 @@ public class ReclamationRestController {
         reclamation.setDescription(reclamationDTO.getDescription());
         reclamation.setStatut(reclamationDTO.getStatut());
         reclamation.setDateResolution(reclamationDTO.getDateResolution());
-        reclamation.setAction(reclamationDTO.getAction());
 
-        return reclamationService.addReclamation(reclamation);
+        return ResponseEntity.ok(reclamationService.addReclamation(reclamationDTO));
     }
+
 
     @Operation(summary = "afficher une réclamation", description = "Permet d'afficher toutes les reclamations existantes.")
     @ApiResponses(value = {
@@ -66,27 +76,27 @@ public class ReclamationRestController {
             @ApiResponse(responseCode = "400", description = "Erreur dans les données envoyées")
     })
     @PutMapping("/update/{id}")
-    public Reclamation updateReclamation(@PathVariable Integer id, @RequestBody ReclamationRequest reclamationDTO) {
-        // Trouver la réclamation existante
-        Reclamation existingReclamation = reclamationService.getReclamationById(id)
-                .orElseThrow(() -> new RuntimeException("Reclamation not found with ID: " + id));
+    public ResponseEntity<?> updateReclamation(@PathVariable Integer id, @RequestBody ReclamationRequest reclamationDTO) {
+        if (badWordFilterService.containsBadWords(reclamationDTO.getDescription())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("❌ Description invalide : langage inapproprié détecté.");
+        }
 
-        // Trouver l'utilisateur avec findById
         User user = userRepository.findById(reclamationDTO.getIdUser())
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + reclamationDTO.getIdUser()));
 
-        // Mettre à jour les champs de la réclamation
-        existingReclamation.setUser(user);
-        existingReclamation.setDateReclamation(reclamationDTO.getDateReclamation());
-        existingReclamation.setTypeReclamation(reclamationDTO.getTypeReclamation());
-        existingReclamation.setDescription(reclamationDTO.getDescription());
-        existingReclamation.setStatut(reclamationDTO.getStatut());
-        existingReclamation.setDateResolution(reclamationDTO.getDateResolution());
-        existingReclamation.setAction(reclamationDTO.getAction());
+        Reclamation reclamation = new Reclamation();
+        reclamation.setUser(user);
+        reclamation.setDateReclamation(reclamationDTO.getDateReclamation());
+        reclamation.setTypeReclamation(reclamationDTO.getTypeReclamation());
+        reclamation.setDescription(reclamationDTO.getDescription());
+        reclamation.setStatut(reclamationDTO.getStatut());
+        reclamation.setDateResolution(reclamationDTO.getDateResolution());
 
-        // Sauvegarder la réclamation mise à jour
-        return reclamationService.addReclamation(existingReclamation);
+        return ResponseEntity.ok(reclamationService.updateReclamation(id, reclamation));
     }
+
 
     @Operation(summary = "supprimer une réclamation", description = "Permet de supprimer une réclamation en spécifiant l'ID .")
     @ApiResponses(value = {

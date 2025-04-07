@@ -55,13 +55,16 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/auth/token/{email}",
-                                "/auth/update/{id}",
-                                "/auth/delete/{id}",
+                                "/user/update/{id}",
+                                "/user/delete/{id}",
                                 "/reclamations/**",
-                                "/auth/archive/{id}",
-                                "/auth/restore/{id}",
-                                "/auth/get/{id}",
-                                "/auth/get/all"
+                                "/user/archive/{id}",
+                                "/user/restore/{id}",
+                                "/user/get/{id}",
+                                "/user/get/all",
+                                "/user/filter",
+                                "/user/users/sorted",
+                                "/user/users/stats"
                         ).permitAll()  //  Routes accessibles sans authentification
                         .anyRequest().authenticated() //  Sécuriser toutes les autres routes
                 )

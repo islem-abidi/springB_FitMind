@@ -16,7 +16,6 @@ public class ReclamationRequest {
     private String description;
     private StatutReclamation statut;
     private Date dateResolution;
-    private String action;
 
     public Long getIdUser() {
         return Long.valueOf(idUser);
@@ -66,12 +65,6 @@ public class ReclamationRequest {
         this.dateResolution = dateResolution;
     }
 
-    public String getAction() {
-        return action;
-    }
 
-    public void setAction(String action) {
-        this.action = action;
-    }
 }
 
