@@ -125,4 +125,11 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
         existingDossier.setArchived(true);
         return dossierMedicalRepository.save(existingDossier);
     }
+    @Override
+    public DossierMedical updateRdvRecommande(Long idDossier, boolean rdvRecommande) {
+        DossierMedical dossier = retrieveDossier(idDossier);
+        dossier.setRdvRecommande(rdvRecommande);
+        return dossierMedicalRepository.save(dossier);
+    }
+
 }

@@ -42,6 +42,12 @@ public class DossierMedical {
     @NotNull(message = "L'Allergie est obligatoire.")
     private Allergies Allergies;
 
+    private Boolean archived = false;
+
+    // ✅ Nouveau champ ajouté ici
+    private Boolean rdvRecommande = false;
+
+    // ======= Getters/Setters =======
     public Allergies getAllergies() {
         return Allergies;
     }
@@ -49,8 +55,6 @@ public class DossierMedical {
     public void setAllergies(Allergies allergies) {
         Allergies = allergies;
     }
-
-    private Boolean archived = false;
 
     public Long getIdDossier() {
         return idDossier;
@@ -116,7 +120,7 @@ public class DossierMedical {
         this.groupeSanguin = groupeSanguin;
     }
 
-    public boolean isArchived() {
+    public Boolean getArchived() {
         return archived;
     }
 
@@ -124,7 +128,16 @@ public class DossierMedical {
         this.archived = archived;
     }
 
-    public Boolean getArchived() {
+    public boolean isArchived() {
         return archived;
+    }
+
+    // ✅ Getter et Setter pour rdvRecommande
+    public Boolean getRdvRecommande() {
+        return rdvRecommande;
+    }
+
+    public void setRdvRecommande(Boolean rdvRecommande) {
+        this.rdvRecommande = rdvRecommande;
     }
 }

@@ -76,4 +76,30 @@ public class DossierMedicalController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de l'archivage : " + e.getMessage());
         }
     }
+    /*@PutMapping("/updateRdvRecommande/{id}")
+    public ResponseEntity<?> updateRdvRecommande(@PathVariable Long id, @RequestParam boolean rdvRecommande) {
+        try {
+            DossierMedical dossier = idossierMedicalServices.retrieveDossier(id);
+            dossier.setRdvRecommande(rdvRecommande);
+            DossierMedical updated = idossierMedicalServices.updateDossier(dossier);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dossier non trouvé : " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la mise à jour : " + e.getMessage());
+        }
+    }*/
+    @PutMapping("/updateRdvRecommande/{id}")
+    public ResponseEntity<?> updateRdvRecommande(@PathVariable Long id, @RequestParam boolean rdvRecommande) {
+        try {
+            DossierMedical updated = idossierMedicalServices.updateRdvRecommande(id, rdvRecommande);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dossier non trouvé : " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur lors de la mise à jour : " + e.getMessage());
+        }
+    }
+
+
 }

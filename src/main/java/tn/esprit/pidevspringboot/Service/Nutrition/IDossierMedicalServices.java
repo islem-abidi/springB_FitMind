@@ -8,7 +8,7 @@ public interface IDossierMedicalServices {
         DossierMedical retrieveDossier(Long idDossier);
         DossierMedical addDossier(DossierMedical dossierMedical);
         DossierMedical updateDossier(DossierMedical dossierMedical);
-
-        // Ajout de la méthode d'archivage
         DossierMedical archiveDossier(Long idDossier);
+        DossierMedical updateRdvRecommande(Long idDossier, boolean rdvRecommande);
+
 }
