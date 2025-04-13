@@ -20,5 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByArchived(Boolean archived);
     boolean existsByEmail(String email);
     List<User> findAllByArchivedFalseAndIsVerifiedTrue();
+    Optional<User> findByResetToken(String token);
 
 }

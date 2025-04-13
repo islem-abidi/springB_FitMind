@@ -221,6 +221,12 @@ public class User implements UserDetails {
     public void setVerified(boolean verified) {
         isVerified = verified;
     }
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_time")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date resetTokenTime;
 
 
 }

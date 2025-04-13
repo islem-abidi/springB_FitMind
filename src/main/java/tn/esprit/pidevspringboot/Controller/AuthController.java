@@ -1,8 +1,5 @@
 package tn.esprit.pidevspringboot.Controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -21,10 +18,7 @@ import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.Service.IUserService;
 import tn.esprit.pidevspringboot.Service.JwtService;
-import tn.esprit.pidevspringboot.dto.EmailRequest;
-import tn.esprit.pidevspringboot.dto.LoginRequest;
-import tn.esprit.pidevspringboot.dto.UserRequest;
-import tn.esprit.pidevspringboot.dto.VerifyRequest;
+import tn.esprit.pidevspringboot.dto.*;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -41,7 +35,6 @@ public class AuthController {
     private static class CodeEntry {
         String code;
         long timestamp;
-
         CodeEntry(String code, long timestamp) {
             this.code = code;
             this.timestamp = timestamp;
@@ -262,6 +255,86 @@ public class AuthController {
         helper.setSubject("Votre code de vérification");
         helper.setText(htmlContent, true); // HTML enabled
 
+        mailSender.send(message);
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody EmailRequest request) {
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.badRequest().body("❌ Email non trouvé.");
+        }
+
+        String token = UUID.randomUUID().toString();
+        User user = optionalUser.get();
+        user.setResetToken(token);
+        user.setResetTokenTime(new Date());
+        userRepository.save(user);
+        resetTokens.put(token, user.getEmail());
+
+        String resetLink = "http://localhost:4200/reset-password?token=" + token;
+        try {
+            sendResetPasswordEmail(user.getEmail(), resetLink, user.getPrenom());
+            return ResponseEntity.ok("📩 Lien de réinitialisation envoyé.");
+        } catch (MessagingException e) {
+            return ResponseEntity.internalServerError().body("⚠️ Erreur d'envoi de mail.");
+        }
+    }
+    private boolean isStrongPassword(String password) {
+        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$");
+    }
+    private final Map<String, String> resetTokens = new HashMap<>();
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        String token = request.getToken();
+        String newPassword = request.getNewPassword();
+
+        if (!resetTokens.containsKey(token)) {
+            return ResponseEntity.badRequest().body("❌ Code invalide ou expiré.");
+        }
+
+        String email = resetTokens.get(token);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.badRequest().body("❌ Utilisateur introuvable.");
+        }
+
+        if (!isStrongPassword(newPassword)) {
+            return ResponseEntity.badRequest().body("❌ Mot de passe faible.");
+        }
+
+        User user = optionalUser.get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        resetTokens.remove(token); // Invalider après usage
+
+        // 🔐 Révoquer les anciens tokens
+        jwtService.revokeAllTokensForUser(user);
+
+        // 🎟 Générer un nouveau token
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles(user.getRole().getRoleType().name())
+                .build();
+
+        String newToken = jwtService.generateToken(userDetails);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "✔️ Mot de passe réinitialisé avec succès.",
+                "token", newToken
+        ));
+    }
+
+    private void sendResetPasswordEmail(String to, String link, String prenom) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setTo(to);
+        helper.setSubject("🔐 Réinitialisez votre mot de passe");
+        helper.setText("<p>Bonjour " + prenom + ",</p>" +
+                "<p>Voici le lien pour réinitialiser votre mot de passe :</p>" +
+                "<p><a href=\"" + link + "\">Réinitialiser</a></p>", true);
         mailSender.send(message);
     }
 

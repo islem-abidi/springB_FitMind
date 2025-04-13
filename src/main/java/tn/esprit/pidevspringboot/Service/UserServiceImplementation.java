@@ -148,8 +148,9 @@ public class UserServiceImplementation implements IUserService {
     @Override
     public Page<UserResponse> getUsersSortedByPrenom(Pageable pageable) {
         Page<User> users = userRepository.findAll(pageable);
-        return users.map(userMapper::mapToResponse);
+        return users.map(this::mapToUserResponse);
     }
+
 
     @Override
     public UserStatsResponse getUserStats() {

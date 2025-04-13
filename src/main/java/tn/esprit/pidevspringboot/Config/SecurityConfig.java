@@ -66,7 +66,9 @@ public class SecurityConfig {
                                 "/user/users/sorted",
                                 "/user/users/stats",
                                 "/user/me",
-                                "/auth/check-login"
+                                "/auth/check-login",
+                                "/auth/forgot-password",
+                                "/auth/reset-password"
                         ).permitAll()  //  Routes accessibles sans authentification
                         .anyRequest().authenticated() //  Sécuriser toutes les autres routes
                 )

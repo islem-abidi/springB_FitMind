@@ -18,6 +18,7 @@ import java.security.Key;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -49,11 +50,14 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().getRoleType().name());
 
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+
         String token = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
 
@@ -64,6 +68,8 @@ public class JwtService {
                 .isValid(true)
                 .user(user)
                 .build();
+        now = new Date();
+        expiryDate = new Date(now.getTime() + jwtExpiration);
 
         tokenRepository.save(newToken);
         return token;
@@ -88,6 +94,14 @@ public class JwtService {
 
     public void revokeToken(String token) {
         tokenRepository.findByToken(token).ifPresent(tokenRepository::delete);
+    }
+    public void revokeAllTokensForUser(User user) {
+        List<Token> validTokens = tokenRepository.findAllValidTokensByUser(user.getIdUser());
+        for (Token t : validTokens) {
+            t.setRevoked(true);
+            t.setExpired(true);
+        }
+        tokenRepository.saveAll(validTokens);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
