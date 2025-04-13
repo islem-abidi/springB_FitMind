@@ -88,26 +88,41 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
 
     @Override
     public DossierMedical updateDossier(DossierMedical dossierMedical) {
-        if (dossierMedical == null || dossierMedical.getIdDossier() == null) {
-            throw new IllegalArgumentException("Le DossierMedical ou son ID ne peut pas être null.");
+        // Vérifie que le dossier existe
+        DossierMedical existingDossier = dossierMedicalRepository.findById(dossierMedical.getIdDossier())
+                .orElseThrow(() -> new IllegalArgumentException("Dossier médical non trouvé."));
+
+        // 🔒 Empêche la modification si le dossier est archivé
+        if (Boolean.TRUE.equals(existingDossier.getArchived())) {
+            throw new IllegalArgumentException("Le dossier est archivé et ne peut pas être modifié.");
         }
 
-        if (!dossierMedicalRepository.existsById(dossierMedical.getIdDossier())) {
-            throw new RuntimeException("DossierMedical avec l'ID " + dossierMedical.getIdDossier() + " non trouvé.");
-        }
+        // Mise à jour des champs
+        existingDossier.setMaladies(dossierMedical.getMaladies());
+        existingDossier.setObjectifSante(dossierMedical.getObjectifSante());
+        existingDossier.setTraitements(dossierMedical.getTraitements());
+        existingDossier.setTailles(dossierMedical.getTailles());
+        existingDossier.setPoids(dossierMedical.getPoids());
+        existingDossier.setGroupeSanguin(dossierMedical.getGroupeSanguin());
+        existingDossier.setAllergies(dossierMedical.getAllergies());
 
-        return dossierMedicalRepository.save(dossierMedical);
+        // Remarque : on ne met pas à jour l'utilisateur ni l'archivage ici pour garder l'intégrité
+
+        return dossierMedicalRepository.save(existingDossier);
     }
+
 
     @Override
     public DossierMedical archiveDossier(Long idDossier) {
-        DossierMedical dossierMedical = retrieveDossier(idDossier);
+        DossierMedical existingDossier = dossierMedicalRepository.findById(idDossier)
+                .orElseThrow(() -> new IllegalArgumentException("Dossier médical non trouvé."));
 
-        if (dossierMedical != null) {
-            dossierMedical.setArchived(true); // Marquer comme archivé
-            return dossierMedicalRepository.save(dossierMedical); // Sauvegarder les changements
-        } else {
-            throw new RuntimeException("DossierMedical avec l'ID " + idDossier + " non trouvé.");
+        // Vérifie s’il est déjà archivé
+        if (Boolean.TRUE.equals(existingDossier.getArchived())) {
+            throw new IllegalStateException("Le dossier est déjà archivé.");
         }
+
+        existingDossier.setArchived(true);
+        return dossierMedicalRepository.save(existingDossier);
     }
 }

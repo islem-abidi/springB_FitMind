@@ -13,8 +13,9 @@ import tn.esprit.pidevspringboot.Service.Nutrition.IDossierMedicalServices;
 import java.util.List;
 
 @RestController
-@RequestMapping("/dossierMedical")
 @Tag(name = "DossierMedical")
+@CrossOrigin(origins = "http://localhost:4200")
+@RequestMapping("/api/dossierMedical")
 public class DossierMedicalController {
 
 
