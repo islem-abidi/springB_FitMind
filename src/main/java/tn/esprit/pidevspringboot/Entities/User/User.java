@@ -137,7 +137,8 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-    @Column(name = "photo_profil", length = 255)
+    @Lob
+    @Column(name = "photo_profil", length = 255, columnDefinition = "LONGTEXT")
     private String photoProfil;
 
     @Column(name = "numero_de_telephone")
@@ -210,5 +211,16 @@ public class User implements UserDetails {
     public void setPassword(String motDePasse) {
         this.motDePasse = motDePasse;
     }
+    @Column(name = "is_verified")
+    private Boolean isVerified = false;
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
+    }
+
 
 }

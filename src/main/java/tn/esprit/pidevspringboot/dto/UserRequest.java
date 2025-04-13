@@ -1,5 +1,7 @@
 package tn.esprit.pidevspringboot.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,10 +16,12 @@ import java.util.Date;
 public class UserRequest {
     private String nom;
     private String prenom;
+
     private String email;
     private String password;
     private Date dateNaissance;
     private Sexe sexe;
+
     private Integer numeroDeTelephone;
     private String photoProfil;
     private Integer id_role;

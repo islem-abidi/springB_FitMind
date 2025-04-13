@@ -1,6 +1,7 @@
 package tn.esprit.pidevspringboot.dto;
 
 
+import jakarta.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import tn.esprit.pidevspringboot.Entities.User.Reclamation.TypeReclamation;
@@ -11,10 +12,15 @@ import java.util.Date;
 @Setter
 public class ReclamationRequest {
     private Integer idUser;
+    @Nullable
     private Date dateReclamation;
     private TypeReclamation typeReclamation;
     private String description;
+    @Nullable
+
     private StatutReclamation statut;
+    @Nullable
+
     private Date dateResolution;
 
     public Long getIdUser() {

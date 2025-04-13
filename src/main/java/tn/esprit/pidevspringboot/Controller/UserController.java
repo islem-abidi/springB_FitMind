@@ -63,10 +63,11 @@ public class UserController {
         userService.archiveUser(idUser);
     }
     @PutMapping("/restore/{id}")
-    public ResponseEntity<String> restoreUser(@PathVariable Long id) {
+    public ResponseEntity<Map<String, String>> restoreUser(@PathVariable Long id) {
         userService.restoreUser(id);
-        return ResponseEntity.ok("Utilisateur restauré avec succès");
+        return ResponseEntity.ok(Map.of("message", "Utilisateur restauré avec succès"));
     }
+
 
     @GetMapping("/filter")
     public ResponseEntity<List<UserResponse>> filterByField(

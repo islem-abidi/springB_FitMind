@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/send-verification-code",
                                 "/auth/verify-code",
-                                "/auth/me",
+                                "/auth/resend-code",
                                 "/error",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -64,7 +64,9 @@ public class SecurityConfig {
                                 "/user/get/all",
                                 "/user/filter",
                                 "/user/users/sorted",
-                                "/user/users/stats"
+                                "/user/users/stats",
+                                "/user/me",
+                                "/auth/check-login"
                         ).permitAll()  //  Routes accessibles sans authentification
                         .anyRequest().authenticated() //  Sécuriser toutes les autres routes
                 )

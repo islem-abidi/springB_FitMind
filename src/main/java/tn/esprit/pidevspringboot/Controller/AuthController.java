@@ -7,201 +7,262 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.pidevspringboot.Entities.User.Role;
 import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
-import tn.esprit.pidevspringboot.Repository.TokenRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.Service.IUserService;
 import tn.esprit.pidevspringboot.Service.JwtService;
+import tn.esprit.pidevspringboot.dto.EmailRequest;
 import tn.esprit.pidevspringboot.dto.LoginRequest;
 import tn.esprit.pidevspringboot.dto.UserRequest;
 import tn.esprit.pidevspringboot.dto.VerifyRequest;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.io.IOException;
+import java.security.Principal;
+import java.time.Period;
+import java.util.*;
+
 @RestController
 @RequestMapping("/auth")
 @SecurityRequirement(name = "BearerAuth")
-
 public class AuthController {
-    private final Map<String, String> verificationCodes = new HashMap<>();
 
-    @Autowired
-    private UserRepository userRepository;
+    private final Map<String, CodeEntry> verificationCodes = new HashMap<>();
 
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private static class CodeEntry {
+        String code;
+        long timestamp;
 
-    @Autowired
-    private JavaMailSender mailSender;
+        CodeEntry(String code, long timestamp) {
+            this.code = code;
+            this.timestamp = timestamp;
+        }
+    }
 
-    @Autowired
-    private JwtService jwtService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private RoleRepository roleRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private JavaMailSender mailSender;
+    @Autowired private JwtService jwtService;
+    @Autowired private IUserService userService;
+ private UserRequest userRequest;
+    @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> saveUser(
+            @RequestPart("user") UserRequest userRequest,
+            @RequestPart(value = "photo", required = false) MultipartFile photo
+    ) throws IOException {
+        String nom = userRequest.getNom().toLowerCase();
+        String prenom = userRequest.getPrenom().toLowerCase();
+        String email = userRequest.getEmail().toLowerCase();
+        String expected1 = prenom + "." + nom + "@esprit.tn";
+        String expected2 = nom + "." + prenom + "@esprit.tn";
 
-@Autowired
-private IUserService userService;
-    @PostMapping("/registration")
-    public ResponseEntity<Object> saveUser(@RequestBody UserRequest userRequest) {
-        System.out.println("Requête POST reçue sur /auth/registration : " + userRequest.getEmail());
-
-        if (!userRequest.getEmail().matches("^[a-zA-Z]+\\.[a-zA-Z]+@esprit\\.tn$")) {
-            return ResponseEntity.status(400).body("Invalid email format. Use nom.prenom@esprit.tn");
+        if (!email.equals(expected1) && !email.equals(expected2)) {
+            return ResponseEntity.badRequest().body("❌ Email invalide : " + expected1 + " ou " + expected2);
         }
 
-        if (userService.isEmailTaken(userRequest.getEmail())) {
-            return ResponseEntity.status(400).body("Email already in use.");
+        if (userService.isEmailTaken(email)) {
+            return ResponseEntity.badRequest().body("❌ Email déjà utilisé.");
+        }
+
+        if (userRequest.getNumeroDeTelephone() == null ||
+                !userRequest.getNumeroDeTelephone().toString().matches("^[2459]\\d{7}$")) {
+            return ResponseEntity.badRequest().body("❌ Numéro invalide (format tunisien)");
+        }
+
+        if (userRequest.getDateNaissance() == null ||
+                Period.between(
+                        userRequest.getDateNaissance().toInstant()
+                                .atZone(java.time.ZoneId.systemDefault()).toLocalDate(),
+                        java.time.LocalDate.now()
+                ).getYears() < 18) {
+            return ResponseEntity.badRequest().body("❌ L'utilisateur doit avoir au moins 18 ans.");
+        }
+
+        String password = userRequest.getPassword();
+        if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[\\W_]).{8,}$")) {
+            return ResponseEntity.badRequest().body("❌ Mot de passe invalide.");
         }
 
         Role userRole = roleRepository.findById(userRequest.getId_role())
-                .orElseThrow(() -> new RuntimeException("Role not found!"));
+                .orElseThrow(() -> new RuntimeException("❌ Rôle introuvable."));
 
-        tn.esprit.pidevspringboot.Entities.User.User user = new tn.esprit.pidevspringboot.Entities.User.User();
+        User user = new User();
         user.setNom(userRequest.getNom());
         user.setPrenom(userRequest.getPrenom());
-        user.setEmail(userRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
         user.setDateNaissance(userRequest.getDateNaissance());
         user.setSexe(userRequest.getSexe());
         user.setNumeroDeTelephone(userRequest.getNumeroDeTelephone());
-        user.setPhotoProfil(userRequest.getPhotoProfil());
-        user.setRole(userRole);
 
+        if (photo != null && !photo.isEmpty()) {
+            String base64Image = Base64.getEncoder().encodeToString(photo.getBytes());
+            user.setPhotoProfil(base64Image);
+        }
+        System.out.println("📸 Fichier: " + (photo != null ? photo.getOriginalFilename() : "Aucun"));
+
+
+        user.setRole(userRole);
+        user.setVerified(false);
         userRepository.save(user);
 
-        // 🔹 Générer et envoyer le code de vérification automatiquement
-        String verificationCode = String.format("%06d", new Random().nextInt(999999));
+        String code = String.format("%06d", new Random().nextInt(999999));
+        verificationCodes.put(email, new CodeEntry(code, System.currentTimeMillis()));
+
         try {
-            sendEmail(user.getEmail(), verificationCode);
-            verificationCodes.put(user.getEmail(), verificationCode);
+            sendEmail(email, code, prenom, nom);
         } catch (MessagingException e) {
-            return ResponseEntity.status(500).body("User registered, but failed to send verification code.");
+            return ResponseEntity.internalServerError().body("✔️ Inscription OK, mais erreur envoi code.");
         }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "User registered successfully. Verification code sent.");
-        response.put("email", user.getEmail());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of(
+                "message", "✔️ Inscription réussie. Code envoyé.",
+                "email", email
+        ));
     }
+
+
+
+    @GetMapping("/check-login")
+    public ResponseEntity<Boolean> isLoggedIn(Principal principal) {
+        boolean isLogged = principal != null && principal.getName() != null;
+        return ResponseEntity.ok(isLogged);
+    }
+    @PostMapping("/resend-code")
+    public ResponseEntity<Object> resendCode(@RequestBody EmailRequest request) {
+        String email = request.getEmail();
+        String code = verificationCodes.get(email).code;
+        if (!userRepository.existsByEmail(email)) {
+            return ResponseEntity.badRequest().body("❌ Email non trouvé.");
+        }
+
+        String newCode = String.format("%06d", new Random().nextInt(999999));
+        verificationCodes.put(email, new CodeEntry(newCode, System.currentTimeMillis()));
+
+        try {
+            sendEmail(email, code, userRequest.getPrenom(), userRequest.getNom());
+
+            return ResponseEntity.ok("📩 Nouveau code envoyé !");
+        } catch (MessagingException e) {
+            return ResponseEntity.internalServerError().body("⚠️ Envoi du code échoué.");
+        }
+    }
+
     @PostMapping("/verify-code")
-    public ResponseEntity<Object> verifyCode(@RequestBody VerifyRequest request){
-        return ResponseEntity.status(200).body(verificationCodes.get(request.getCode()));
+    public ResponseEntity<Object> verifyCode(@RequestBody VerifyRequest request) {
+        String email = request.getEmail();
+        String code = request.getCode();
+
+        CodeEntry entry = verificationCodes.get(email);
+        if (entry == null) {
+            return ResponseEntity.badRequest().body("❌ Aucune demande de vérification trouvée.");
+        }
+
+        if (System.currentTimeMillis() - entry.timestamp > 300_000) {
+            return ResponseEntity.badRequest().body("❌ Code expiré. Demandez un nouveau.");
+        }
+
+        if (!entry.code.equals(code)) {
+            return ResponseEntity.badRequest().body("❌ Code invalide.");
+        }
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setVerified(true);
+            userRepository.save(user);
+        }
+
+        verificationCodes.remove(email);
+        return ResponseEntity.ok("✅ Code vérifié avec succès ! Utilisateur activé.");
     }
 
 
-    @Operation(summary = "Authentification", description = "Permet de se connecter.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Authentification réussie"),
-            @ApiResponse(responseCode = "401", description = "Identifiants incorrects")
-    })
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            Optional<tn.esprit.pidevspringboot.Entities.User.User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
-
-            if (optionalUser.isEmpty()) {
-                return ResponseEntity.status(401).body("Invalid credentials: User not found");
-            }
-
-            tn.esprit.pidevspringboot.Entities.User.User user = optionalUser.get();
-
-            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                return ResponseEntity.status(401).body("Invalid credentials: Incorrect password");
-            }
-
-            UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-                    .username(user.getEmail())
-                    .password(user.getPassword())
-                    .roles(user.getRole().getRoleType().name()) // 🔹 Stocke le rôle
-                    .build();
-
-            // ✅ Générer un nouveau token et supprimer l’ancien
-            String token = jwtService.generateToken(userDetails);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Login Successful!");
-            response.put("token", token);
-            response.put("role", user.getRole().getRoleType()); // 🔥 Associe le rôle
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
+        Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(401).body("❌ Utilisateur introuvable.");
         }
+
+        User user = optionalUser.get();
+
+        if (!user.isVerified()) {
+            return ResponseEntity.status(403).body("❌ Veuillez vérifier votre email avant de vous connecter.");
+        }
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(401).body("❌ Mot de passe incorrect.");
+        }
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles(user.getRole().getRoleType().name())
+                .build();
+
+        String token = jwtService.generateToken(userDetails);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "✅ Connexion réussie",
+                "token", token,
+                "role", user.getRole().getRoleType()
+        ));
     }
 
-    @Operation(summary = "Obtenir les informations de l'utilisateur connecté", description = "Nécessite un JWT valide.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Informations de l'utilisateur retournées"),
-            @ApiResponse(responseCode = "401", description = "Non authentifié")
-    })
-    @GetMapping("/me")
-    public ResponseEntity<Object> getUserInfo(@RequestHeader("Authorization") String token) {
-        try {
-            if (token.startsWith("Bearer ")) {
-                token = token.substring(7); // Supprime "Bearer " pour garder le token brut
-            }
 
-            String email = jwtService.extractUsername(token);
-            Optional<tn.esprit.pidevspringboot.Entities.User.User> userOptional = userRepository.findByEmail(email);
 
-            if (userOptional.isEmpty()) {
-                return ResponseEntity.status(404).body("Utilisateur non trouvé");
-            }
 
-            tn.esprit.pidevspringboot.Entities.User.User user = userOptional.get();
-            Map<String, Object> userInfo = new HashMap<>();
-            userInfo.put("email", user.getEmail());
-            userInfo.put("nom", user.getNom());
-            userInfo.put("prenom", user.getPrenom());
-            userInfo.put("role", user.getRole().getRoleType());
-
-            return ResponseEntity.ok(userInfo);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).body("Token invalide ou expiré");
-        }
-    }
-    @Operation(summary = "Déconnexion", description = "Permet de se déconnecter et d'invalider le token.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Déconnexion réussie"),
-            @ApiResponse(responseCode = "400", description = "Token non valide")
-    })
     @PostMapping("/logout")
     public ResponseEntity<Object> logout(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(400).body("Invalid token format");
+            return ResponseEntity.badRequest().body("❌ Format de token invalide.");
         }
 
-        String token = authHeader.substring(7);
-        jwtService.revokeToken(token);
-
-        return ResponseEntity.ok("User successfully logged out and token invalidated.");
+        jwtService.revokeToken(authHeader.substring(7));
+        return ResponseEntity.ok("✅ Déconnexion réussie.");
     }
 
-
-    @Autowired
-    public AuthController(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
-
-    private void sendEmail(String to, String code) throws MessagingException {
+    private void sendEmail(String to, String code, String prenom, String nom) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+        String fullName = prenom + " " + nom;
+        String verificationUrl = "http://localhost:4200/verify-code?email=" + to;
+
+        String htmlContent = String.format("""
+        <html>
+        <body style="font-family: Arial, sans-serif; color: #333;">
+            <h2>Bonjour %s,</h2>
+            <p>Merci pour votre inscription.</p>
+            <p>Voici votre code de vérification :</p>
+            <p style="font-size: 22px; font-weight: bold;">%s</p>
+            <p>Ou cliquez ici pour vérifier votre compte :</p>
+            <a href="%s"
+               style="display: inline-block; padding: 10px 20px; background-color: #28a745; color: white;
+                      text-decoration: none; border-radius: 5px;">
+               Vérifier mon compte
+            </a>
+            <p style="margin-top: 20px;">À bientôt 👋</p>
+        </body>
+        </html>
+    """, fullName, code, verificationUrl);
+
         helper.setTo(to);
-        helper.setSubject("Your Verification Code");
-        helper.setText("Your verification code is: " + code);
+        helper.setSubject("Votre code de vérification");
+        helper.setText(htmlContent, true); // HTML enabled
+
         mailSender.send(message);
     }
+
 }

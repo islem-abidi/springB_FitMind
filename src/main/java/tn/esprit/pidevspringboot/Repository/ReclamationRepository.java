@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface ReclamationRepository extends JpaRepository<Reclamation, Integer> {
     List<Reclamation> findByArchivedFalse();
+    List<Reclamation> findByArchivedTrue();
 }

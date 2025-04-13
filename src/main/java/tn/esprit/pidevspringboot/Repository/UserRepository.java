@@ -19,5 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findBySexe(Sexe sexe);
     List<User> findByArchived(Boolean archived);
     boolean existsByEmail(String email);
+    List<User> findAllByArchivedFalseAndIsVerifiedTrue();
 
 }
