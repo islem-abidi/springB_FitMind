@@ -9,5 +9,6 @@ public interface IRendezVousServices {
     RendezVous addRendezVous(RendezVous rendezVous);
     RendezVous updateRendezVous(RendezVous rendezVous);
     RendezVous archiveRendezVous(Long idRendezVous);
+    void updateStatutRendezVous(Long id, String statut);
 
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprit.pidevspringboot.Entities.Nutrition.RendezVous;
+import tn.esprit.pidevspringboot.Entities.Nutrition.StatutRendezVous;
 import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Repository.Nutrition.RendezVousRepository;
 import tn.esprit.pidevspringboot.Repository.User.UserRepository;
@@ -85,4 +86,22 @@ public class RendezVousServiceImpl implements IRendezVousServices {
             throw new RuntimeException("RendezVous avec l'ID " + idRendezVous + " non trouvé.");
         }
     }
+
+    @Override
+    public void updateStatutRendezVous(Long id, String statut) {
+        // Chercher le rendez-vous par son ID
+        RendezVous rendezVous = rendezVousRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Rendez-vous non trouvé avec ID : " + id));
+
+        try {
+            // Tenter de convertir le statut en une valeur de l'énumération
+            StatutRendezVous statutEnum = StatutRendezVous.valueOf(statut);
+            rendezVous.setStatut(statutEnum); // Mettre à jour le statut
+            rendezVousRepository.save(rendezVous); // Sauvegarder le rendez-vous mis à jour
+        } catch (IllegalArgumentException e) {
+            // Si le statut est invalide, lever une exception avec un message spécifique
+            throw new IllegalArgumentException("Statut invalide : " + statut);
+        }
+    }
+
 }
