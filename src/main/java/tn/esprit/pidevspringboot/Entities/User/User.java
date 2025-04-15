@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import tn.esprit.pidevspringboot.Entities.ActiviteSportive.Activite;
+
 import java.util.*;
 
 @Entity
@@ -13,8 +14,8 @@ import java.util.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "id_user")
-@ToString(exclude = {"reclamations", "activite"})
+@EqualsAndHashCode(of = "idUser")
+@ToString(exclude = {"reclamationsCreees", "reclamationsTraitees", "activite"})
 public class User implements UserDetails {
 
     @Id
@@ -22,88 +23,16 @@ public class User implements UserDetails {
     @Column(name = "id_user")
     private long idUser;
 
-    @Column(name = "nom", length = 100, nullable = false)
+    @Column(name = "nom", nullable = false, length = 100)
     private String nom;
 
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public String getPrenom() {
-        return prenom;
-    }
-
-    public void setPrenom(String prenom) {
-        this.prenom = prenom;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getMotDePasse() {
-        return motDePasse;
-    }
-
-    public void setMotDePasse(String motDePasse) {
-        this.motDePasse = motDePasse;
-    }
-
-    public Date getDateNaissance() {
-        return dateNaissance;
-    }
-
-    public void setDateNaissance(Date dateNaissance) {
-        this.dateNaissance = dateNaissance;
-    }
-
-    public String getPhotoProfil() {
-        return photoProfil;
-    }
-
-    public void setPhotoProfil(String photoProfil) {
-        this.photoProfil = photoProfil;
-    }
-
-    public Integer getNumeroDeTelephone() {
-        return numeroDeTelephone;
-    }
-
-    public void setNumeroDeTelephone(Integer numeroDeTelephone) {
-        this.numeroDeTelephone = numeroDeTelephone;
-    }
-
-    public Set<Reclamation> getReclamations() {
-        return reclamations;
-    }
-
-    public void setReclamations(Set<Reclamation> reclamations) {
-        this.reclamations = reclamations;
-    }
-
-    public Set<Activite> getActivite() {
-        return activite;
-    }
-
-    public void setActivite(Set<Activite> activite) {
-        this.activite = activite;
-    }
-
-    @Column(name = "prenom", length = 100, nullable = false)
+    @Column(name = "prenom", nullable = false, length = 100)
     private String prenom;
 
-    @Column(name = "email", length = 255, unique = true, nullable = false)
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "mot_de_passe", length = 255, nullable = false)
+    @Column(name = "mot_de_passe", nullable = false, length = 255)
     private String motDePasse;
 
     @Temporal(TemporalType.DATE)
@@ -114,57 +43,45 @@ public class User implements UserDetails {
     @Column(name = "sexe", nullable = false)
     private Sexe sexe;
 
-
-
-    public void setSexe(Sexe sexe) {
-        this.sexe = sexe;
-    }
-
-
-    public long getIdUser() {
-        return idUser;
-    }
-
-    public void setIdUser(long idUser) {
-        this.idUser = idUser;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
     @Lob
-    @Column(name = "photo_profil", length = 255, columnDefinition = "LONGTEXT")
+    @Column(name = "photo_profil", columnDefinition = "LONGTEXT")
     private String photoProfil;
 
     @Column(name = "numero_de_telephone")
     private Integer numeroDeTelephone;
 
-    @ManyToOne
-    @JoinColumn(name = "id_role", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_role")
     private Role role;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Reclamation> reclamations = new HashSet<>();
 
     @ManyToMany
     private Set<Activite> activite = new HashSet<>();
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Token> tokens = new ArrayList<>();
 
-    // Implémentation des méthodes de UserDetails
+    @OneToMany(mappedBy = "etudiant", cascade = CascadeType.ALL)
+    private List<Reclamation> reclamationsCreees;
+
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
+    private List<Reclamation> reclamationsTraitees;
+
+    @Column(name = "archived", nullable = false)
+    private boolean archived = false;
+
+    @Column(name = "is_verified")
+    private Boolean isVerified = false;
+
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "reset_token_time")
+    private Date resetTokenTime;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Retourne les rôles de l'utilisateur, ici on suppose que "role" est de type Role
         return Set.of(() -> "ROLE_" + this.role.getRoleType().name());
-    }
-
-    public Sexe getSexe() {
-        return sexe;
     }
 
     @Override
@@ -174,59 +91,26 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.email; // Utilisation de l'email comme identifiant
+        return this.email;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Par défaut, l'utilisateur n'a pas de date d'expiration
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // L'utilisateur n'est pas bloqué
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Les identifiants ne sont pas expirés
-    }
-
-    @Column(name = "archived")
-    private boolean archived = false;
-
-    public boolean isArchived() {
-        return archived;
-    }
-
-    public void setArchived(boolean archived) {
-        this.archived = archived;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return true; // L'utilisateur est activé
+        return true;
     }
-
-    public void setPassword(String motDePasse) {
-        this.motDePasse = motDePasse;
-    }
-    @Column(name = "is_verified")
-    private Boolean isVerified = false;
-
-    public boolean isVerified() {
-        return isVerified;
-    }
-
-    public void setVerified(boolean verified) {
-        isVerified = verified;
-    }
-    @Column(name = "reset_token")
-    private String resetToken;
-
-    @Column(name = "reset_token_time")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date resetTokenTime;
-
-
 }

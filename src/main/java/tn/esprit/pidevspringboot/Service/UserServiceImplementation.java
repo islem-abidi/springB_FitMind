@@ -46,7 +46,7 @@ public class UserServiceImplementation implements IUserService {
         user.setPhotoProfil(userRequest.getPhotoProfil());
 
         if (userRequest.getPassword() != null) {
-            user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
+            user.setMotDePasse(passwordEncoder.encode(userRequest.getPassword()));
         }
 
         if (userRequest.getId_role() != null) {
@@ -54,6 +54,7 @@ public class UserServiceImplementation implements IUserService {
                     .orElseThrow(() -> new RuntimeException("Role not found"));
             user.setRole(role);
         }
+
 
         return userRepository.save(user);
     }
@@ -91,7 +92,7 @@ public class UserServiceImplementation implements IUserService {
     @Override
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                .filter(u -> !u.isArchived() && u.isVerified())
+                .filter(u -> !u.isArchived() && u.isEnabled())
                 .orElseThrow(() -> new RuntimeException("User not found or not verified"));
     }
 

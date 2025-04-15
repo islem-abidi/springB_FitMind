@@ -1,6 +1,5 @@
 package tn.esprit.pidevspringboot.Entities.User;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.Date;
@@ -18,11 +17,13 @@ public class Reclamation {
     @Column(name = "id_reclamation")
     private Integer idReclamation;
 
-    @ManyToOne
-    @JoinColumn(name = "id_user", nullable = false)
-    @JsonIgnoreProperties({"reclamations", "activite", "authorities", "seance_sports"})
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "etudiant_id", nullable = false)
+    private User etudiant; // L'étudiant qui crée la réclamation
 
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admin_id")
+    private User admin; // L'administrateur qui traite la réclamation (peut être null)
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_reclamation", nullable = false)
@@ -52,6 +53,5 @@ public class Reclamation {
     private Date dateResolution;
 
     @Column(name = "archived", nullable = false)
-    private boolean archived = false; //false aala khatr par defaut mhich archivé
-
+    private boolean archived = false;
 }

@@ -53,7 +53,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         jwt = authHeader.substring(7);
 
-        // 🔐 Vérifier si le token existe dans la BDD
         var tokenOptional = tokenRepository.findByToken(jwt);
         if (tokenOptional.isEmpty()) {
             filterChain.doFilter(request, response);
@@ -70,11 +69,11 @@ public class JwtFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities()
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
         filterChain.doFilter(request, response);
     }
+
 }

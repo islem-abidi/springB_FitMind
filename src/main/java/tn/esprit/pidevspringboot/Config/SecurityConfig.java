@@ -45,31 +45,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 🔥 Mode stateless
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/registration",
-                                "/auth/login",
-                                "/auth/send-verification-code",
-                                "/auth/verify-code",
-                                "/auth/resend-code",
-                                "/error",
+                                "/auth/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/auth/token/{email}",
-                                "/user/update/{id}",
-                                "/user/delete/{id}",
-                                "/reclamations/**",
-                                "/user/archive/{id}",
-                                "/user/restore/{id}",
-                                "/user/get/{id}",
-                                "/user/get/all",
-                                "/user/filter",
-                                "/user/users/sorted",
-                                "/user/users/stats",
-                                "/user/me",
-                                "/auth/check-login",
-                                "/auth/forgot-password",
-                                "/auth/reset-password"
-                        ).permitAll()  //  Routes accessibles sans authentification
+                                "/v3/api-docs/**"
+                        ).permitAll()
+                        .requestMatchers("/reclamations/**").authenticated()
                         .anyRequest().authenticated() //  Sécuriser toutes les autres routes
                 )
                 .authenticationProvider(authenticationProvider()) // 🔹 Utilisation de l'authenticationProvider

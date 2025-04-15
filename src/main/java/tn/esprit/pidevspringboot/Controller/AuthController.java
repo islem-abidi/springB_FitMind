@@ -93,7 +93,7 @@ public class AuthController {
         user.setNom(userRequest.getNom());
         user.setPrenom(userRequest.getPrenom());
         user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+        user.setMotDePasse(passwordEncoder.encode(password));
         user.setDateNaissance(userRequest.getDateNaissance());
         user.setSexe(userRequest.getSexe());
         user.setNumeroDeTelephone(userRequest.getNumeroDeTelephone());
@@ -106,7 +106,7 @@ public class AuthController {
 
 
         user.setRole(userRole);
-        user.setVerified(false);
+        user.setIsVerified(false);
         userRepository.save(user);
 
         String code = String.format("%06d", new Random().nextInt(999999));
@@ -172,7 +172,7 @@ public class AuthController {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
-            user.setVerified(true);
+            user.setIsVerified(true);
             userRepository.save(user);
         }
 
@@ -190,7 +190,7 @@ public class AuthController {
 
         User user = optionalUser.get();
 
-        if (!user.isVerified()) {
+        if (!user.isEnabled()) {
             return ResponseEntity.status(403).body("❌ Veuillez vérifier votre email avant de vous connecter.");
         }
 
@@ -304,7 +304,7 @@ public class AuthController {
         }
 
         User user = optionalUser.get();
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMotDePasse(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
         resetTokens.remove(token); // Invalider après usage
