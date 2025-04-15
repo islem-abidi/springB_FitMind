@@ -9,18 +9,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import tn.esprit.pidevspringboot.Entities.User.LoginEvent;
 import tn.esprit.pidevspringboot.Entities.User.Role;
 import tn.esprit.pidevspringboot.Entities.User.Sexe;
 import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Mapper.UserMapper;
+import tn.esprit.pidevspringboot.Repository.LoginEventRepository;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.dto.UserRequest;
 import tn.esprit.pidevspringboot.dto.UserResponse;
 import tn.esprit.pidevspringboot.dto.UserStatsResponse;
 
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +36,7 @@ public class UserServiceImplementation implements IUserService {
     @Autowired private RoleRepository roleRepository;
     @Autowired private UserMapper userMapper;
     @PersistenceContext private EntityManager entityManager;
+    @Autowired private LoginEventRepository loginEventRepository;
 
     @Override
     public User updateUser(Long id, UserRequest userRequest) {
@@ -156,6 +162,7 @@ public class UserServiceImplementation implements IUserService {
     @Override
     public UserStatsResponse getUserStats() {
         List<User> users = userRepository.findAllByArchivedFalseAndIsVerifiedTrue();
+        List<LoginEvent> events = loginEventRepository.findAll();
 
         long total = users.size();
 
@@ -173,8 +180,42 @@ public class UserServiceImplementation implements IUserService {
                         Collectors.counting()
                 ));
 
-        return new UserStatsResponse(total, countBySexe, countByRole);
+        LocalDate today = LocalDate.now();
+        Map<LocalDate, Long> loginsPerDay = events.stream()
+                .filter(e -> e.getLoginDate() != null)
+                .collect(Collectors.groupingBy(
+                        e -> e.getLoginDate().toLocalDate(), // ✅ si LoginDate est déjà LocalDateTime
+                        Collectors.counting()
+                ));
+
+        Map<Long, Date> lastLoginMap = events.stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getUser().getIdUser(),
+                        Collectors.collectingAndThen(
+                                Collectors.maxBy(Comparator.comparing(LoginEvent::getLoginDate)),
+                                opt -> opt.map(event ->
+                                        Date.from(event.getLoginDate().atZone(ZoneId.systemDefault()).toInstant())
+                                ).orElse(null)
+                        )
+                ));
+
+
+
+        long activeUsers = lastLoginMap.values().stream()
+                .filter(date -> date != null && ChronoUnit.DAYS.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), today) <= 7)
+                .count();
+
+        long inactiveUsers = total - activeUsers;
+
+        double avgLastSeenDays = lastLoginMap.values().stream()
+                .filter(Objects::nonNull)
+                .mapToLong(date -> ChronoUnit.DAYS.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), today))
+                .average().orElse(0);
+
+        return new UserStatsResponse(total, countBySexe, countByRole, loginsPerDay, activeUsers, inactiveUsers, avgLastSeenDays);
     }
+
+
 
     @Override
     public boolean isEmailTaken(String email) {

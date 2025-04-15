@@ -21,5 +21,4 @@ public interface IUserService {
     Page<UserResponse> getUsersSortedByPrenom(Pageable pageable);
     UserStatsResponse getUserStats();
     boolean isEmailTaken(String email);
-
 }

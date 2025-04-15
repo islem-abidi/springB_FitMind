@@ -3,6 +3,7 @@ package tn.esprit.pidevspringboot.Controller;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,17 +14,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tn.esprit.pidevspringboot.Entities.User.LoginEvent;
 import tn.esprit.pidevspringboot.Entities.User.Role;
 import tn.esprit.pidevspringboot.Entities.User.User;
+import tn.esprit.pidevspringboot.Repository.LoginEventRepository;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.Service.CaptchaValidatorService;
 import tn.esprit.pidevspringboot.Service.IUserService;
+import tn.esprit.pidevspringboot.Service.IpLocationService;
 import tn.esprit.pidevspringboot.Service.JwtService;
 import tn.esprit.pidevspringboot.dto.*;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.*;
 
@@ -49,7 +54,10 @@ public class AuthController {
     @Autowired private JavaMailSender mailSender;
     @Autowired private JwtService jwtService;
     @Autowired private IUserService userService;
- private UserRequest userRequest;
+    @Autowired private IpLocationService ipLocationService;
+    @Autowired private LoginEventRepository loginEventRepo;
+
+    private UserRequest userRequest;
     @PostMapping(value = "/registration", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> saveUser(
             @RequestPart("user") UserRequest userRequest,
@@ -190,7 +198,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
         if (optionalUser.isEmpty()) {
             return ResponseEntity.status(401).body("❌ Utilisateur introuvable.");
@@ -205,6 +213,11 @@ public class AuthController {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(401).body("❌ Mot de passe incorrect.");
         }
+        LoginEvent event = LoginEvent.builder()
+                .user(user)
+                .loginDate(LocalDateTime.now())
+                .build();
+        loginEventRepo.save(event);
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
@@ -213,13 +226,18 @@ public class AuthController {
                 .build();
 
         String token = jwtService.generateToken(userDetails);
+        String ip=request.getRemoteAddr();
+        Map<String, Object> location = ipLocationService.getLocation(ip);
+
 
         return ResponseEntity.ok(Map.of(
                 "message", "✅ Connexion réussie",
                 "token", token,
                 "role", user.getRole().getRoleType()
         ));
+
     }
+
 
 
 

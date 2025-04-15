@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import tn.esprit.pidevspringboot.Entities.User.User;
+import tn.esprit.pidevspringboot.Repository.LoginEventRepository;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
 import tn.esprit.pidevspringboot.Service.IUserService;
@@ -38,7 +39,7 @@ public class UserController {
     private RoleRepository roleRepository;
     @Autowired
     private IUserService userService;
-
+@Autowired private LoginEventRepository loginEventRepository;
     /// ///////////////CRUD : delete , update , get User
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
@@ -92,6 +93,8 @@ public class UserController {
     public ResponseEntity<UserStatsResponse> getUserStats() {
         return ResponseEntity.ok(userService.getUserStats());
     }
+ 
+
     @GetMapping("/users/check-email")
     public ResponseEntity<Map<String, Boolean>> checkEmailExists(@RequestParam String email) {
         boolean exists = userService.isEmailTaken(email);
