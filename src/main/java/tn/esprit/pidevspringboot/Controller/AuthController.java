@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,6 +17,7 @@ import tn.esprit.pidevspringboot.Entities.User.Role;
 import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Repository.RoleRepository;
 import tn.esprit.pidevspringboot.Repository.UserRepository;
+import tn.esprit.pidevspringboot.Service.CaptchaValidatorService;
 import tn.esprit.pidevspringboot.Service.IUserService;
 import tn.esprit.pidevspringboot.Service.JwtService;
 import tn.esprit.pidevspringboot.dto.*;
@@ -40,7 +42,7 @@ public class AuthController {
             this.timestamp = timestamp;
         }
     }
-
+@Autowired private CaptchaValidatorService captchaValidatorService;
     @Autowired private UserRepository userRepository;
     @Autowired private RoleRepository roleRepository;
     @Autowired private PasswordEncoder passwordEncoder;
@@ -58,6 +60,12 @@ public class AuthController {
         String email = userRequest.getEmail().toLowerCase();
         String expected1 = prenom + "." + nom + "@esprit.tn";
         String expected2 = nom + "." + prenom + "@esprit.tn";
+        String token = userRequest.getCaptchaToken(); // champ à ajouter dans SignupRequest DTO
+
+        if (!captchaValidatorService.isCaptchaValid(token)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("reCAPTCHA validation échouée.");
+        }
+
 
         if (!email.equals(expected1) && !email.equals(expected2)) {
             return ResponseEntity.badRequest().body("❌ Email invalide : " + expected1 + " ou " + expected2);

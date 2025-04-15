@@ -16,6 +16,7 @@ import java.util.Date;
 public class UserRequest {
     private String nom;
     private String prenom;
+    private String captchaToken;
 
     private String email;
     private String password;
