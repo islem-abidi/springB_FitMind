@@ -47,6 +47,16 @@ public class DossierMedical {
     // ✅ Nouveau champ ajouté ici
     private Boolean rdvRecommande = false;
 
+    private float imc;
+
+    public float getImc() {
+        return imc;
+    }
+
+    public void setImc(float imc) {
+        this.imc = imc;
+    }
+
     // ======= Getters/Setters =======
     public Allergies getAllergies() {
         return Allergies;

@@ -40,7 +40,7 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
     }
 
 
-    @Override
+    /*@Override
     public DossierMedical addDossier(DossierMedical dossierMedical) {
         // Vérification que l'utilisateur est valide
         if (dossierMedical.getUser() == null || dossierMedical.getUser().getIdUser() == null) {
@@ -84,7 +84,25 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
         }
 
         return dossierMedicalRepository.save(dossierMedical);
+    }*/
+    private float calculIMC(float poids, float tailleCm) {
+        float tailleM = tailleCm / 100f;
+        return poids / (tailleM * tailleM);
     }
+
+    @Override
+    public DossierMedical addDossier(DossierMedical dossierMedical) {
+        if (dossierMedical.getTailles() <= 0 || dossierMedical.getPoids() <= 0) {
+            throw new IllegalArgumentException("Taille ou poids invalides pour calculer l'IMC.");
+        }
+
+        float imc = calculIMC(dossierMedical.getPoids(), dossierMedical.getTailles());
+        dossierMedical.setImc(imc);
+
+        return dossierMedicalRepository.save(dossierMedical);
+    }
+
+
 
     @Override
     public DossierMedical updateDossier(DossierMedical dossierMedical) {
