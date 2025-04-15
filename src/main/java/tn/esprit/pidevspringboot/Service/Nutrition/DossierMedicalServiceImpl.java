@@ -36,8 +36,25 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
             throw new RuntimeException("Ce dossier est archivé et ne peut pas être consulté.");
         }
 
+        // Vérifier si l'IMC est déjà calculé et présent dans l'objet DossierMedical
+        // Ici, on vérifie si l'IMC est 0 ou si les données nécessaires (poids, taille) sont présentes.
+        if (dossier.getImc() == 0 && dossier.getPoids() > 0 && dossier.getTailles() > 0) {
+            // Calcul de l'IMC si les données sont présentes
+            double poids = dossier.getPoids();
+            double taille = dossier.getTailles();
+
+            if (taille > 0) {
+                // Calculer l'IMC
+                double imc = poids / Math.pow(taille / 100, 2);
+                // Convertir l'IMC en float avant de le stocker
+                dossier.setImc((float) imc);  // Stocker l'IMC calculé dans l'objet dossier
+            }
+        }
+
         return dossier;
     }
+
+
 
 
     /*@Override
