@@ -124,10 +124,17 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
         existingDossier.setGroupeSanguin(dossierMedical.getGroupeSanguin());
         existingDossier.setAllergies(dossierMedical.getAllergies());
 
-        // Remarque : on ne met pas à jour l'utilisateur ni l'archivage ici pour garder l'intégrité
+        // 🔄 Recalcul automatique de l’IMC
+        if (dossierMedical.getTailles() > 0 && dossierMedical.getPoids() > 0) {
+            float imc = calculIMC(dossierMedical.getPoids(), dossierMedical.getTailles());
+            existingDossier.setImc(imc);
+        } else {
+            throw new IllegalArgumentException("Taille ou poids invalides pour le recalcul de l'IMC.");
+        }
 
         return dossierMedicalRepository.save(existingDossier);
     }
+
 
 
     @Override
