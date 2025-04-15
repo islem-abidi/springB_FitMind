@@ -79,7 +79,7 @@ public class RendezVousController {
         }
     }
 
-    @PutMapping("/updateStatutRendezVous/{id}")
+   /* @PutMapping("/updateStatutRendezVous/{id}")
     public ResponseEntity<?> updateStatutRendezVous(@PathVariable Long id, @RequestBody Map<String, String> updatedStatus) {
         try {
             // Vérifier si le statut est présent dans la requête
@@ -98,7 +98,14 @@ public class RendezVousController {
             logger.error("Erreur lors de la mise à jour du statut du rendez-vous avec ID: " + id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur serveur lors de la mise à jour du statut.");
         }
-    }
+    }*/
+   @PatchMapping("/updateStatutRendezVous/{id}")
+   public ResponseEntity<RendezVous> updateStatut(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+       String statut = payload.get("statut");
+       rendezVousServices.updateStatutRendezVous(id, statut);
+       return ResponseEntity.ok().build();
+   }
+
 
 
 }
