@@ -106,6 +106,24 @@ public class RendezVousController {
        return ResponseEntity.ok().build();
    }
 
+    @GetMapping("/retrieveArchivedRendezVous")
+    public ResponseEntity<List<RendezVous>> getArchivedRendezVous() {
+        List<RendezVous> rendezVousList = rendezVousServices.retrieveArchivedRendezVous();
+        return ResponseEntity.ok(rendezVousList);
+    }
+
+    @PutMapping("/restoreRendezVous/{id}")
+    public ResponseEntity<?> restoreRendezVous(@PathVariable Long id) {
+        try {
+            RendezVous updatedRendezVous = rendezVousServices.restoreRendezVous(id);
+            return ResponseEntity.ok(updatedRendezVous);
+        } catch (Exception e) {
+            logger.error("Erreur lors de la restauration du rendez-vous", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la restauration : " + e.getMessage());
+        }
+    }
+
 
 
 }

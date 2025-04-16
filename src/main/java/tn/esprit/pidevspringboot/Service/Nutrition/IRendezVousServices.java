@@ -10,5 +10,7 @@ public interface IRendezVousServices {
     RendezVous updateRendezVous(RendezVous rendezVous);
     RendezVous archiveRendezVous(Long idRendezVous);
     void updateStatutRendezVous(Long id, String statut);
+    List<RendezVous> retrieveArchivedRendezVous();
+    RendezVous restoreRendezVous(Long idRendezVous);
 
 }

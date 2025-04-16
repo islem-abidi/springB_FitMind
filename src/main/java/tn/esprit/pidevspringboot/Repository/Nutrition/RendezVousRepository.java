@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
     List<RendezVous> findByArchivedFalse();
+    List<RendezVous> findByArchivedTrue();
 
 
 }

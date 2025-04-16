@@ -127,4 +127,20 @@ public class RendezVousServiceImpl implements IRendezVousServices {
         }
     }
 
+    @Override
+    public List<RendezVous> retrieveArchivedRendezVous() {
+        return rendezVousRepository.findByArchivedTrue();
+    }
+
+    @Override
+    public RendezVous restoreRendezVous(Long idRendezVous) {
+        RendezVous rendezVous = retrieveRendezVous(idRendezVous);
+        if (rendezVous != null) {
+            rendezVous.setArchived(false);
+            return rendezVousRepository.save(rendezVous);
+        } else {
+            throw new RuntimeException("RendezVous avec l'ID " + idRendezVous + " non trouvé.");
+        }
+    }
+
 }
