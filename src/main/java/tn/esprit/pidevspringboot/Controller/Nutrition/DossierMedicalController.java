@@ -101,5 +101,25 @@ public class DossierMedicalController {
         }
     }
 
+    // Ajoutez ces endpoints à votre controller existant
+    @GetMapping("/retrieveArchivedDossiers")
+    public ResponseEntity<List<DossierMedical>> getArchivedDossiers() {
+        List<DossierMedical> dossiers = idossierMedicalServices.retrieveArchivedDossiers();
+        return ResponseEntity.ok(dossiers);
+    }
+
+    @PutMapping("/restoreDossier/{id}")
+    public ResponseEntity<?> restoreDossier(@PathVariable Long id) {
+        try {
+            DossierMedical restoredDossier = idossierMedicalServices.restoreDossier(id);
+            return ResponseEntity.ok(restoredDossier);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dossier non trouvé : " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la restauration : " + e.getMessage());
+        }
+    }
+
 
 }

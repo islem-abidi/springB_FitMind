@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface DossierMedicalRepository extends JpaRepository<DossierMedical, Long> {
 
     List<DossierMedical> findByArchivedFalse();
+    List<DossierMedical> findByArchivedTrue(); // Pour les archivés
+
 
     Optional<DossierMedical> findByUser(User user);
 }

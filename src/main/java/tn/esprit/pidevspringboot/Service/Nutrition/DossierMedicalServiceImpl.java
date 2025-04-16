@@ -174,4 +174,24 @@ public class DossierMedicalServiceImpl implements IDossierMedicalServices {
         return dossierMedicalRepository.save(dossier);
     }
 
+    // Ajoutez cette méthode à votre service existant
+    @Override
+    public DossierMedical restoreDossier(Long idDossier) {
+        DossierMedical existingDossier = dossierMedicalRepository.findById(idDossier)
+                .orElseThrow(() -> new IllegalArgumentException("Dossier médical non trouvé."));
+
+        if (Boolean.FALSE.equals(existingDossier.getArchived())) {
+            throw new IllegalStateException("Le dossier est déjà actif (non archivé).");
+        }
+
+        existingDossier.setArchived(false);
+        return dossierMedicalRepository.save(existingDossier);
+    }
+
+    // Ajoutez aussi cette méthode pour récupérer les archives
+    @Override
+    public List<DossierMedical> retrieveArchivedDossiers() {
+        return dossierMedicalRepository.findByArchivedTrue();
+    }
+
 }

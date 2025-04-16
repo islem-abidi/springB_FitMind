@@ -10,5 +10,6 @@ public interface IDossierMedicalServices {
         DossierMedical updateDossier(DossierMedical dossierMedical);
         DossierMedical archiveDossier(Long idDossier);
         DossierMedical updateRdvRecommande(Long idDossier, boolean rdvRecommande);
-
+        DossierMedical restoreDossier (Long idDossier);
+        List<DossierMedical> retrieveArchivedDossiers();
 }
