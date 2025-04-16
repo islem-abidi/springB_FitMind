@@ -65,7 +65,7 @@ public class RendezVousServiceImpl implements IRendezVousServices {
 
 
 
-    @Override
+   /* @Override
     public RendezVous updateRendezVous(RendezVous rendezVous) {
         if (rendezVous == null || rendezVous.getIdRendezVous() == null) {
             throw new IllegalArgumentException("Le RendezVous ou son ID ne peut pas être null.");
@@ -74,7 +74,30 @@ public class RendezVousServiceImpl implements IRendezVousServices {
             throw new RuntimeException("RendezVous avec l'ID " + rendezVous.getIdRendezVous() + " non trouvé.");
         }
         return rendezVousRepository.save(rendezVous);
-    }
+    }*/
+   @Override
+   public RendezVous updateRendezVous(RendezVous rendezVous) {
+       if (rendezVous == null || rendezVous.getIdRendezVous() == null) {
+           throw new IllegalArgumentException("Le RendezVous ou son ID ne peut pas être null.");
+       }
+
+       // Récupérer le rendez-vous existant
+       RendezVous existingRendezVous = rendezVousRepository.findById(rendezVous.getIdRendezVous())
+               .orElseThrow(() -> new RuntimeException("RendezVous avec l'ID " + rendezVous.getIdRendezVous() + " non trouvé."));
+
+       // Vérifier que le statut est EN_COURS
+       if (existingRendezVous.getStatut() != StatutRendezVous.EN_COURS) {
+           throw new IllegalStateException("Le rendez-vous ne peut être modifié que si son statut est 'EN_COURS'.");
+       }
+
+       // Mettre à jour les champs modifiables
+       existingRendezVous.setDateHeure(rendezVous.getDateHeure());
+       existingRendezVous.setDuree(rendezVous.getDuree());
+       existingRendezVous.setRemarque(rendezVous.getRemarque());
+       existingRendezVous.setRappel(rendezVous.isRappel());
+
+       return rendezVousRepository.save(existingRendezVous);
+   }
 
     @Override
     public RendezVous archiveRendezVous(Long idRendezVous) {
