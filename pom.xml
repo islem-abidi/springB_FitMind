@@ -6,10 +6,14 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
 <<<<<<< HEAD
+<<<<<<< HEAD
         <version>3.2.2</version>
 =======
         <version>3.4.3</version>
 >>>>>>> origin/gestionNutrition
+=======
+        <version>3.4.3</version>
+>>>>>>> origin/GestionActivite-Sportive
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>tn.esprit</groupId>
@@ -39,6 +43,7 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
+<<<<<<< HEAD
 <<<<<<< HEAD
         <!-- Spring Boot JWT -->
         <dependency>
@@ -94,15 +99,20 @@
 
 
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
 
         <!-- Lombok for reducing boilerplate code -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <scope>provided</scope>
 =======
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
             <optional>true</optional>
         </dependency>
 
@@ -120,6 +130,7 @@
         </dependency>
         <dependency>
 <<<<<<< HEAD
+<<<<<<< HEAD
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
@@ -128,10 +139,13 @@
         <dependency>
 =======
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.1.0</version>
         </dependency>
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 =======
@@ -142,10 +156,18 @@
             <scope>compile</scope>
         </dependency>
 >>>>>>> origin/gestionNutrition
+=======
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+>>>>>>> origin/GestionActivite-Sportive
     </dependencies>
 
     <build>
         <plugins>
+<<<<<<< HEAD
 <<<<<<< HEAD
             <!-- Plugin Maven Compiler -->
             <plugin>
@@ -167,6 +189,8 @@
     </build>
 
 =======
+=======
+>>>>>>> origin/GestionActivite-Sportive
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -193,5 +217,8 @@
             </plugin>
         </plugins>
     </build>
+<<<<<<< HEAD
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
 </project>

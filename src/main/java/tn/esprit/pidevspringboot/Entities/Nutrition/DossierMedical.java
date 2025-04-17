@@ -2,9 +2,12 @@ package tn.esprit.pidevspringboot.Entities.Nutrition;
 
 import jakarta.persistence.*;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import jakarta.validation.constraints.*;
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
 import lombok.Data;
 import tn.esprit.pidevspringboot.Entities.User.User;
 
@@ -21,6 +24,9 @@ public class DossierMedical {
     private User user;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/GestionActivite-Sportive
     private String maladies;
     private String allergies;
     private String objectifSante;
@@ -31,6 +37,7 @@ public class DossierMedical {
 
     @Enumerated(EnumType.STRING)
     private GroupSanguin groupeSanguin;
+<<<<<<< HEAD
 }
 =======
     @NotBlank(message = "Le champ maladies est obligatoire.")
@@ -168,3 +175,6 @@ public class DossierMedical {
     }
 }
 >>>>>>> origin/gestionNutrition
+=======
+}
+>>>>>>> origin/GestionActivite-Sportive

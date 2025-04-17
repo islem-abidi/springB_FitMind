@@ -1,5 +1,6 @@
 package tn.esprit.pidevspringboot.Entities.User;
 
+<<<<<<< HEAD
 import jakarta.persistence.*;
 import lombok.*;
 <<<<<<< HEAD
@@ -12,6 +13,16 @@ import tn.esprit.pidevspringboot.Entities.Abonnement.Abonnement;
 import tn.esprit.pidevspringboot.Entities.ActiviteSportive.Activite;
 import tn.esprit.pidevspringboot.Entities.Nutrition.RendezVous;
 >>>>>>> origin/gestionNutrition
+=======
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
+import tn.esprit.pidevspringboot.Entities.Abonnement.Abonnement;
+import tn.esprit.pidevspringboot.Entities.ActiviteSportive.Activite;
+>>>>>>> origin/GestionActivite-Sportive
 
 import java.util.*;
 
@@ -22,16 +33,21 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 <<<<<<< HEAD
+<<<<<<< HEAD
 @EqualsAndHashCode(of = "idUser")
 @ToString(exclude = {"reclamationsCreees", "reclamationsTraitees", "activite"})
 public class User implements UserDetails {
 =======
 public class User {
 >>>>>>> origin/gestionNutrition
+=======
+public class User {
+>>>>>>> origin/GestionActivite-Sportive
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_user")
+<<<<<<< HEAD
 <<<<<<< HEAD
     private long idUser;
 
@@ -74,17 +90,46 @@ public class User {
     @Lob
     @Column(name = "photo_profil", columnDefinition = "LONGTEXT")
 =======
+=======
+    long id;
+
+
+    @Column(name = "nom", length = 100, nullable = false)
+    String nom;
+
+    @Column(name = "prenom", length = 100, nullable = false)
+    String prenom;
+
+    @Column(name = "email", length = 255, unique = true, nullable = false)
+    String email;
+
+    @Column(name = "mot_de_passe", length = 255, nullable = false)
+    String motDePasse;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date_naissance")
+    Date dateNaissance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sexe", nullable = false)
+    Sexe sexe;
+
+>>>>>>> origin/GestionActivite-Sportive
     public enum Sexe {
         Homme, Femme, Autre
     }
 
     @Column(name = "photo_profil", length = 255)
+<<<<<<< HEAD
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
     private String photoProfil;
 
     @Column(name = "numero_de_telephone")
     private Integer numeroDeTelephone;
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_role")
@@ -151,6 +196,8 @@ public class User {
     public boolean isEnabled() {
         return true;
 =======
+=======
+>>>>>>> origin/GestionActivite-Sportive
     @ManyToOne
     @JoinColumn(name = "id_role", nullable = false)
     private Role role;
@@ -159,17 +206,31 @@ public class User {
     private List<Reclamation> reclamations = new ArrayList<>();
 
     @ManyToMany
+<<<<<<< HEAD
+=======
+    @JsonIgnoreProperties("user")
+    @JsonIgnore
+>>>>>>> origin/GestionActivite-Sportive
     Set<Activite> activite;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Abonnement> abonnements = new ArrayList<>();
 
+<<<<<<< HEAD
     public Long getIdUser() {
         return idUser;
     }
 
     public void setIdUser(Long idUser) {
         this.idUser = idUser;
+=======
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+>>>>>>> origin/GestionActivite-Sportive
     }
 
     public String getNom() {
@@ -266,6 +327,9 @@ public class User {
 
     public void setAbonnements(List<Abonnement> abonnements) {
         this.abonnements = abonnements;
+<<<<<<< HEAD
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
     }
 }

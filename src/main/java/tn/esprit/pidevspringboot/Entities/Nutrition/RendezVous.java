@@ -2,6 +2,7 @@ package tn.esprit.pidevspringboot.Entities.Nutrition;
 
 import jakarta.persistence.*;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import lombok.Data;
 =======
 import jakarta.validation.constraints.*;
@@ -9,11 +10,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 >>>>>>> origin/gestionNutrition
+=======
+import lombok.Data;
+>>>>>>> origin/GestionActivite-Sportive
 import tn.esprit.pidevspringboot.Entities.User.User;
 
 import java.util.Date;
 
 @Entity
+<<<<<<< HEAD
 <<<<<<< HEAD
 @Data
 =======
@@ -21,6 +26,9 @@ import java.util.Date;
 @Setter
 @ToString
 >>>>>>> origin/gestionNutrition
+=======
+@Data
+>>>>>>> origin/GestionActivite-Sportive
 public class RendezVous {
 
     @Id
@@ -29,6 +37,9 @@ public class RendezVous {
 
     @ManyToOne
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> origin/GestionActivite-Sportive
     @JoinColumn(name = "id_user", nullable = false)
     private User user;
 
@@ -38,6 +49,7 @@ public class RendezVous {
     private int duree;
     private String remarque;
     private boolean rappelEnvoye;
+<<<<<<< HEAD
 }
 =======
     @JoinColumn(name = "nutritioniste_id")
@@ -139,3 +151,6 @@ public class RendezVous {
     }
 }
 >>>>>>> origin/gestionNutrition
+=======
+}
+>>>>>>> origin/GestionActivite-Sportive

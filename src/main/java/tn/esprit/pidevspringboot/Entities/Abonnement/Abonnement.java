@@ -32,7 +32,10 @@ public class Abonnement {
     private String modePaiement;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> origin/GestionActivite-Sportive
     public Long getIdAbonnement() {
         return idAbonnement;
     }
@@ -104,5 +107,8 @@ public class Abonnement {
     public void setModePaiement(String modePaiement) {
         this.modePaiement = modePaiement;
     }
+<<<<<<< HEAD
 >>>>>>> origin/gestionNutrition
+=======
+>>>>>>> origin/GestionActivite-Sportive
 }
