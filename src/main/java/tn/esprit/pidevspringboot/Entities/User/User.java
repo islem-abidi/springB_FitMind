@@ -53,6 +53,8 @@ public class User implements UserDetails {
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_role")
     private Role role;
+    @Column(name = "banned", nullable = false)
+    private boolean banned = false;
 
     @ManyToMany
     private Set<Activite> activite = new HashSet<>();

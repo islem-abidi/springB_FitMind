@@ -213,6 +213,9 @@ public class AuthController {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(401).body("❌ Mot de passe incorrect.");
         }
+        if (user.isBanned()) {
+            throw new RuntimeException("❌ Accès refusé : utilisateur banni");
+        }
         LoginEvent event = LoginEvent.builder()
                 .user(user)
                 .loginDate(LocalDateTime.now())

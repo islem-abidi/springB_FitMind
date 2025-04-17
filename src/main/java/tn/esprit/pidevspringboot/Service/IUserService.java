@@ -15,10 +15,10 @@ public interface IUserService {
     void deleteUser(Long id);
      List<UserResponse> getAllUsers();
    User getUserById(Long id);
-     void archiveUser(Long id);
     void restoreUser(Long id);
     List<UserResponse> filterByField(String field, String value);
     Page<UserResponse> getUsersSortedByPrenom(Pageable pageable);
     UserStatsResponse getUserStats();
     boolean isEmailTaken(String email);
+ void banUser(Long idUser);
 }

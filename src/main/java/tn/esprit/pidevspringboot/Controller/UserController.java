@@ -63,17 +63,19 @@ public class UserController {
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
-    @Operation(summary = "Archiver un utilisateur")
-    @PutMapping("/archive/{idUser}")
-    public void archiveUser(@PathVariable Long idUser) {
-        userService.archiveUser(idUser);
-    }
-    @PutMapping("/restore/{id}")
-    public ResponseEntity<Map<String, String>> restoreUser(@PathVariable Long id) {
-        userService.restoreUser(id);
-        return ResponseEntity.ok(Map.of("message", "Utilisateur restauré avec succès"));
+
+    @PutMapping("/unban/{idUser}")
+    public ResponseEntity<Map<String, String>> unbanUser(@PathVariable Long idUser) {
+        userService.restoreUser(idUser); // appel logique ci-dessus
+        return ResponseEntity.ok(Map.of("message", "✅ Utilisateur débanni avec succès"));
     }
 
+
+    @PutMapping("/ban/{id}")
+    public ResponseEntity<Map<String, String>> banUser(@PathVariable Long id) {
+        userService.banUser(id);
+        return ResponseEntity.ok(Map.of("message", "Utilisateur banni avec succès"));
+    }
 
     @GetMapping("/filter")
     public ResponseEntity<List<UserResponse>> filterByField(
@@ -93,7 +95,7 @@ public class UserController {
     public ResponseEntity<UserStatsResponse> getUserStats() {
         return ResponseEntity.ok(userService.getUserStats());
     }
- 
+
 
     @GetMapping("/users/check-email")
     public ResponseEntity<Map<String, Boolean>> checkEmailExists(@RequestParam String email) {

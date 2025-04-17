@@ -1,4 +1,3 @@
-// src/main/java/tn/esprit/pidevspringboot/Service/UserServiceImplementation.java
 
 package tn.esprit.pidevspringboot.Service;
 
@@ -102,29 +101,34 @@ public class UserServiceImplementation implements IUserService {
                 .orElseThrow(() -> new RuntimeException("User not found or not verified"));
     }
 
+
     @Override
-    public void archiveUser(Long idUser) {
-        User user = userRepository.findById(idUser)
+    public void banUser(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        if (user.isArchived()) {
-            throw new RuntimeException("Utilisateur déjà archivé");
+        if (user.isBanned()) {
+            return; // ✅ Ne rien faire si déjà banni
         }
 
-        user.setArchived(true);
+        user.setBanned(true);
         userRepository.save(user);
     }
+
 
     @Override
     public void restoreUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        System.out.println("🎯 ID = " + id + " | archived = " + user.isArchived());
+        if (!user.isBanned()) {
+            throw new RuntimeException("Utilisateur n'est pas banni");
+        }
 
-        user.setArchived(false);
+        user.setBanned(false);
         userRepository.save(user);
     }
+
 
 
 
@@ -169,25 +173,37 @@ public class UserServiceImplementation implements IUserService {
         Map<String, Long> countBySexe = users.stream()
                 .filter(u -> u.getSexe() != null)
                 .collect(Collectors.groupingBy(
-                        user -> user.getSexe().toString(),
+                        u -> u.getSexe().toString(),
                         Collectors.counting()
                 ));
 
         Map<String, Long> countByRole = users.stream()
                 .filter(u -> u.getRole() != null)
                 .collect(Collectors.groupingBy(
-                        user -> user.getRole().getRoleType().name(),
+                        u -> u.getRole().getRoleType().name(),
                         Collectors.counting()
                 ));
 
-        LocalDate today = LocalDate.now();
+        // ✅ Liste des noms par jour
+        Map<LocalDate, List<String>> loginsPerDayNames = events.stream()
+                .filter(e -> e.getLoginDate() != null)
+                .collect(Collectors.groupingBy(
+                        e -> e.getLoginDate().toLocalDate(),
+                        Collectors.mapping(
+                                e -> e.getUser().getPrenom() + " " + e.getUser().getNom(),
+                                Collectors.toList()
+                        )
+                ));
+
+        // ✅ Compte total par jour
         Map<LocalDate, Long> loginsPerDay = events.stream()
                 .filter(e -> e.getLoginDate() != null)
                 .collect(Collectors.groupingBy(
-                        e -> e.getLoginDate().toLocalDate(), // ✅ si LoginDate est déjà LocalDateTime
+                        e -> e.getLoginDate().toLocalDate(),
                         Collectors.counting()
                 ));
 
+        // ✅ Dernière connexion par utilisateur
         Map<Long, Date> lastLoginMap = events.stream()
                 .collect(Collectors.groupingBy(
                         e -> e.getUser().getIdUser(),
@@ -199,21 +215,33 @@ public class UserServiceImplementation implements IUserService {
                         )
                 ));
 
-
+        LocalDate today = LocalDate.now();
 
         long activeUsers = lastLoginMap.values().stream()
-                .filter(date -> date != null && ChronoUnit.DAYS.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), today) <= 7)
+                .filter(date -> date != null &&
+                        ChronoUnit.DAYS.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), today) <= 7)
                 .count();
 
         long inactiveUsers = total - activeUsers;
 
         double avgLastSeenDays = lastLoginMap.values().stream()
                 .filter(Objects::nonNull)
-                .mapToLong(date -> ChronoUnit.DAYS.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), today))
+                .mapToLong(date -> ChronoUnit.DAYS.between(
+                        date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), today))
                 .average().orElse(0);
 
-        return new UserStatsResponse(total, countBySexe, countByRole, loginsPerDay, activeUsers, inactiveUsers, avgLastSeenDays);
+        return new UserStatsResponse(
+                total,
+                countBySexe,
+                countByRole,
+                loginsPerDayNames,
+                loginsPerDay,
+                activeUsers,
+                inactiveUsers,
+                avgLastSeenDays
+        );
     }
+
 
 
 
