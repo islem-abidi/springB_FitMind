@@ -1,0 +1,368 @@
+#evenement-section {
+  /* Utiliser l'un des fonds ci-dessus */
+  position: relative;
+  padding: 40px 20px;
+  margin-top: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* Ajouter un effet de bordure subtil */
+#evenement-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to right, #0d6efd, #6610f2);
+  border-radius: 20px 20px 0 0;
+}
+
+/* Améliorer l'espacement intérieur */
+#evenement-section .container {
+  padding: 20px;
+}
+
+/* Améliorer la lisibilité de tous les titres */
+#evenement-section h2, 
+#evenement-section h3, 
+#evenement-section h4, 
+#evenement-section h5 {
+  position: relative;
+  z-index: 1;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12) !important;
+}
+
+.text-sm {
+  font-size: 0.95rem;
+}
+
+.badge {
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.events-horizontal-scroll {
+  position: relative;
+  overflow: hidden;
+}
+
+.events-horizontal-scroll .d-flex {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+  padding-bottom: 10px;
+}
+
+.events-horizontal-scroll .d-flex::-webkit-scrollbar {
+  height: 6px;
+}
+
+.events-horizontal-scroll .d-flex::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.events-horizontal-scroll .d-flex::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 20px;
+}
+
+.event-card-wrapper {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-card-wrapper:hover {
+  transform: translateY(-5px);
+  z-index: 2;
+}
+
+
+.progress {
+  border-radius: 20px;
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  border-radius: 20px;
+  transition: width 0.6s ease;
+}
+
+/* Animation pour les barres de statistiques */
+@keyframes growWidth {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.progress-bar {
+  animation: growWidth 1s ease-out;
+}
+/* Ajoutez ces styles à votre fichier CSS */
+.calendar-container {
+  width: 320px;
+  z-index: 100;
+}
+
+.calendar-day {
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+  background-color: #f0f0f0;
+}
+
+.calendar-day.today {
+  background-color: #e6f7ff;
+  font-weight: bold;
+  border: 1px solid #0d6efd;
+}
+
+.calendar-day.has-event {
+  font-weight: bold;
+  color: #0d6efd;
+}
+
+.event-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.event-popup {
+  position: absolute;
+  width: 250px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  border: 1px solid #dee2e6;
+}
+
+.event-popup-item {
+  border-left: 3px solid #0d6efd;
+}
+.navigation-arrows {
+  display: flex;
+  align-items: center;
+}
+.navigation-arrows .btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.navigation-arrows .btn:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+.map-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.map-modal-content {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.event-card-wrapper:hover .card {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+[id^="map-container-"] {
+  height: 400px !important;
+  width: 100% !important;
+  display: block !important;
+  border-radius: 10px;
+  overflow: hidden;
+}
+/* Style timbre officiel */
+.official-stamp {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transform: rotate(-15deg);
+  border: 2px dashed;
+  opacity: 0.9;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 10;
+}
+
+.stamp-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transform: rotate(0deg);
+}
+
+.stamp-pending {
+  color: #856404;
+  border-color: #ffc107;
+  background-color: rgba(255, 243, 205, 0.85);
+}
+
+.stamp-confirmed {
+  color: #155724;
+  border-color: #28a745;
+  background-color: rgba(212, 237, 218, 0.85);
+}
+
+.stamp-rejected {
+  color: #721c24;
+  border-color: #dc3545;
+  background-color: rgba(248, 215, 218, 0.85);
+}
+
+.stamp-text {
+  font-size: 0.65rem;
+  letter-spacing: 0px;
+  font-weight: bold;
+}
+
+.official-stamp i {
+  font-size: 1.2rem;
+}
+
+/* Effet de rotation accentué pour le style tampon */
+@keyframes stampRotate {
+  0% { transform: rotate(-15deg); }
+  25% { transform: rotate(-13deg); }
+  75% { transform: rotate(-17deg); }
+  100% { transform: rotate(-15deg); }
+}
+
+.official-stamp {
+  animation: stampRotate 4s infinite ease-in-out;
+}
+/* Styles des timbres de statut */
+.status-stamp {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transform: rotate(-2deg);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  min-width: 100px;
+  text-align: center;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px dashed #ffc107;
+}
+
+.status-confirmed {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #28a745;
+}
+
+.status-rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #dc3545;
+}
+
+.stamp-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stamp-content i {
+  font-size: 1rem;
+}
+
+/* Effet d'ondulation sur les bords */
+.status-stamp::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  z-index: -1;
+  border-radius: 8px;
+}
+
+/* Animation subtile pour attirer l'attention */
+@keyframes pulse {
+  0% { transform: scale(1) rotate(-2deg); }
+  50% { transform: scale(1.03) rotate(-1deg); }
+  100% { transform: scale(1) rotate(-2deg); }
+}
+
+.status-pending {
+  animation: pulse 2s infinite ease-in-out;
+}
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.modal-content-qrcode {
+  background: white;
+  border-radius: 1rem;
+  padding: 1rem;
+  position: relative;
+  max-width: 300px;
+  width: 90%;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
