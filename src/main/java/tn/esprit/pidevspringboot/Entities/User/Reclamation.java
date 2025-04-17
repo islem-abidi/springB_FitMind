@@ -17,6 +17,7 @@ public class Reclamation {
     @Column(name = "id_reclamation")
     private Integer idReclamation;
 
+<<<<<<< HEAD
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "etudiant_id", nullable = false)
     private User etudiant; // L'étudiant qui crée la réclamation
@@ -24,6 +25,11 @@ public class Reclamation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id")
     private User admin; // L'administrateur qui traite la réclamation (peut être null)
+=======
+    @ManyToOne
+    @JoinColumn(name = "id_user", nullable = false)
+    private User user;
+>>>>>>> origin/gestionNutrition
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "date_reclamation", nullable = false)
@@ -52,6 +58,11 @@ public class Reclamation {
     @Column(name = "date_resolution")
     private Date dateResolution;
 
+<<<<<<< HEAD
     @Column(name = "archived", nullable = false)
     private boolean archived = false;
+=======
+    @Column(name = "action", columnDefinition = "TEXT")
+    private String action;
+>>>>>>> origin/gestionNutrition
 }

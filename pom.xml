@@ -5,7 +5,11 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
+<<<<<<< HEAD
         <version>3.2.2</version>
+=======
+        <version>3.4.3</version>
+>>>>>>> origin/gestionNutrition
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>tn.esprit</groupId>
@@ -35,6 +39,7 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
+<<<<<<< HEAD
         <!-- Spring Boot JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -82,12 +87,22 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
+=======
+
+        <!-- Spring Security for authentication and authorization -->
+
+
+
+>>>>>>> origin/gestionNutrition
 
         <!-- Lombok for reducing boilerplate code -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+<<<<<<< HEAD
             <scope>provided</scope>
+=======
+>>>>>>> origin/gestionNutrition
             <optional>true</optional>
         </dependency>
 
@@ -104,21 +119,34 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
+<<<<<<< HEAD
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <!-- Swagger dependencies -->
 
         <dependency>
+=======
+>>>>>>> origin/gestionNutrition
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.1.0</version>
         </dependency>
+<<<<<<< HEAD
 
+=======
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>13.0</version>
+            <scope>compile</scope>
+        </dependency>
+>>>>>>> origin/gestionNutrition
     </dependencies>
 
     <build>
         <plugins>
+<<<<<<< HEAD
             <!-- Plugin Maven Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -138,4 +166,32 @@
         </plugins>
     </build>
 
+=======
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+>>>>>>> origin/gestionNutrition
 </project>
