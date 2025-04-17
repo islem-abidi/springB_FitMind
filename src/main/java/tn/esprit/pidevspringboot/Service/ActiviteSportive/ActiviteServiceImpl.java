@@ -6,12 +6,10 @@ import org.springframework.stereotype.Service;
 import tn.esprit.pidevspringboot.Entities.ActiviteSportive.Activite;
 import tn.esprit.pidevspringboot.Entities.User.User;
 import tn.esprit.pidevspringboot.Repository.ActiviteSportive.ActiviteRepository;
+import tn.esprit.pidevspringboot.Repository.ActiviteSportive.ReservationRepository;
 import tn.esprit.pidevspringboot.Repository.userRepository;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +19,8 @@ public class ActiviteServiceImpl implements IActiviteServices {
     ActiviteRepository activiteRepository;
     @Autowired
     userRepository userRepository ;
+    @Autowired
+    ReservationRepository reservationRepository;
     @Override
     public List<Activite> readAllActivite() {
         return activiteRepository.findAll();
@@ -61,6 +61,36 @@ public class ActiviteServiceImpl implements IActiviteServices {
     @Override
     public void deleteActivite(long idA) {
         activiteRepository.deleteById(idA);
+    }
+
+    @Override
+    public List<Activite> getActivitesTendances() {
+        List<Activite> toutes = activiteRepository.findAll();
+
+        toutes.forEach(activite -> {
+            int nb = reservationRepository.countConfirmedReservationsThisWeek(activite.getId());
+            activite.setNbReservationsSemaine(nb); // propriété @Transient
+        });
+
+        // Trier toutes les activités par nb de réservations confirmées (ordre décroissant)
+        toutes.sort(Comparator.comparingInt(Activite::getNbReservationsSemaine).reversed());
+
+        return toutes; // ✅ retourne TOUTES les activités, triées
+    }
+
+
+    @Override
+    public List<Activite> getActivitesTendancesAvecToutes() {
+        List<Activite> toutes = activiteRepository.findAll();
+
+        toutes.forEach(activite -> {
+            int nb = reservationRepository.countConfirmedReservationsThisWeek(activite.getId());
+            activite.setNbReservationsSemaine(nb);
+        });
+
+        toutes.sort(Comparator.comparingInt(Activite::getNbReservationsSemaine).reversed());
+
+        return toutes; // retourne tout trié, la 1ère est la plus tendance
     }
 
 

@@ -28,6 +28,11 @@ public class ReservationServicesImpl implements IReservationServices {
     Seance_sportRepository seanceRepository;
     @Autowired
     userRepository userRepository ;
+
+    @Override
+    public List<Reservation> getReservationsByUser(Long userId) {
+        return reservationRepository.findByUser_Id(userId);
+    }
     @Override
     public Reservation ajouterAListAttente(Long idSeance, Long idUser) {
         Seance_sport seance = seanceRepository.findById(idSeance)
@@ -45,15 +50,21 @@ public class ReservationServicesImpl implements IReservationServices {
 
         // 📩 Email avec lien de confirmation
         String confirmationLink = "http://localhost:4200/activite-off?reservationId=" + savedReservation.getId_reservation();
+        String subject = "🎯 Confirmation de votre réservation - " + seance.getActivite().getNomActivite();
 
-        String subject = "Confirmez votre réservation 🕓";
-        String body = "Bonjour " + user.getNom() + ",\n\n" +
-                "Vous êtes en liste d'attente pour l'activité '" + seance.getActivite().getNomActivite() + "'.\n" +
-                "Date : " + seance.getDateSeance() + "\n" +
-                "Lieu : " + seance.getLieu() + "\n\n" +
-                "👉 Pour confirmer votre participation (si une place est disponible), cliquez ici :\n" +
-                confirmationLink + "\n\n" +
-                "Merci et à très bientôt !";
+        String body = "<html><body style='font-family: Arial, sans-serif;'>" +
+                "<h2 style='color:#2c3e50;'>Bonjour " + user.getNom() + ",</h2>" +
+                "<p>Vous êtes inscrit(e) en <strong>liste d'attente</strong> pour l'activité <strong style='color:#2980b9;'>" +
+                seance.getActivite().getNomActivite() + "</strong>.</p>" +
+                "<p><strong>📅 Date :</strong> " + seance.getDateSeance() + "<br>" +
+                "<strong>🕒 Heure :</strong> " + seance.getHeureDebut() + "<br>" +
+                "<strong>📍 Lieu :</strong> " + seance.getLieu() + "</p>" +
+                "<hr>" +
+                "<p style='color:#e67e22;'>👉 Une place se libère ? Vous pouvez confirmer votre participation ici :</p>" +
+                "<p><a href='" + confirmationLink + "' style='padding:10px 20px;background-color:#27ae60;color:white;text-decoration:none;border-radius:5px;'>Confirmer ma réservation</a></p>" +
+                "<br><p>Merci et à bientôt 👋<br>L'équipe Activité Sportive</p>" +
+                "</body></html>";
+
 
         emailService.sendConfirmationEmail(user.getEmail(), subject, body);
 
@@ -93,19 +104,30 @@ public class ReservationServicesImpl implements IReservationServices {
         System.out.println("✅ Réservation confirmée avec succès pour l'utilisateur : " + reservation.getUser().getNom());
         System.out.println("📤 Préparation de l'envoi du 2e e-mail à : " + reservation.getUser().getEmail());
 
+
         // Email de confirmation
+        String subject = "🎉 Réservation Confirmée - " + seance.getActivite().getNomActivite();
+
+        String body = "<html><body style='font-family: Arial, sans-serif;'>" +
+                "<h2 style='color:#2c3e50;'>Bonjour " + reservation.getUser().getNom() + ",</h2>" +
+                "<p>👏 Votre réservation pour l'activité <strong style='color:#2980b9;'>" + seance.getActivite().getNomActivite() + "</strong> est maintenant <strong style='color:green;'>confirmée</strong>.</p>" +
+                "<p><strong>📅 Date :</strong> " + seance.getDateSeance() + "<br>" +
+                "<strong>🕒 Heure :</strong> " + seance.getHeureDebut() + "<br>" +
+                "<strong>📍 Lieu :</strong> " + seance.getLieu() + "</p>" +
+                "<hr>" +
+                "<p style='font-style: italic; color: #555;'>Merci de votre confiance ! Préparez-vous à bouger ! 💪</p>" +
+                "<p>L'équipe <strong>Activité Sportive</strong></p>" +
+                "</body></html>";
+
         emailService.sendConfirmationEmail(
                 reservation.getUser().getEmail(),
-                "Réservation Confirmée ✅",
-                "Bonjour " + reservation.getUser().getNom() + ",\n\n" +
-                        "Votre réservation pour la séance '" + seance.getActivite().getNomActivite() + "' est désormais confirmée.\n" +
-                        "À bientôt !"
+                subject,
+                body
         );
+
 
         return "Réservation confirmée avec succès.";
     }
-
-
 
 
 
@@ -125,4 +147,33 @@ public class ReservationServicesImpl implements IReservationServices {
             // TODO: notifier l'utilisateur (email / sms / etc.)
         }
     }
+
+
+    @Override
+    public String annulerReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Réservation introuvable"));
+
+        if (reservation.getStatus() == Status.ANNULEE) {
+            return "Déjà annulée.";
+        }
+
+        reservation.setStatus(Status.ANNULEE);
+        reservationRepository.save(reservation);
+
+        // Remettre une place dispo
+        Seance_sport seance = reservation.getSeance();
+        seance.setCapaciteDispo(seance.getCapaciteDispo() + 1);
+        seanceRepository.save(seance);
+
+        // (Optionnel) Envoyer un email à l’utilisateur
+        emailService.sendConfirmationEmail(
+                reservation.getUser().getEmail(),
+                "Réservation annulée",
+                "Votre réservation du " + seance.getDateSeance() + " a été annulée."
+        );
+
+        return "Réservation annulée avec succès.";
+    }
+
 }

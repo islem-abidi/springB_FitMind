@@ -1,8 +1,6 @@
 package tn.esprit.pidevspringboot.Entities.ActiviteSportive;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -43,8 +41,7 @@ public class Seance_sport {
 
     String heureFin;
 
-    @Min(value = 1, message = "La capacité maximale doit être au moins de 1.")
-    int capaciteMax;
+
     @Min(value = 0, message = "La capacité disponible ne peut pas être négative.")
     int capaciteDispo;
 
@@ -57,12 +54,12 @@ public class Seance_sport {
     LocalDate dateSeance;
 
     @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "activite_id_activite") // 👈 doit correspondre au champ en base
+        @JoinColumn(name = "activite_id_activite")
+    @JsonIgnoreProperties({"seance"}) // 🔄 éviter boucle
     Activite activite;
 
     @OneToMany(mappedBy = "seance")
-    @JsonIgnore
+    @JsonIgnore // ✅ empêche la boucle infinie
     Set<Reservation> reservations;
 
     public Long getId() {
@@ -112,15 +109,6 @@ public class Seance_sport {
     public void setReservations(Set<Reservation> reservations) {
         this.reservations = reservations;
     }
-
-    public int getCapaciteMax() {
-        return capaciteMax;
-    }
-
-    public void setCapaciteMax(int capaciteMax) {
-        this.capaciteMax = capaciteMax;
-    }
-
     public int getCapaciteDispo() {
         return capaciteDispo;
     }

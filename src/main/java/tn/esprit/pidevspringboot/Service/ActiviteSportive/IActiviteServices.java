@@ -12,4 +12,7 @@ public interface IActiviteServices  {
     public Activite updateActivite(Activite activite);
     public void deleteActivite(long idA);
 
+    List<Activite> getActivitesTendances();
+
+    List<Activite> getActivitesTendancesAvecToutes();
 }

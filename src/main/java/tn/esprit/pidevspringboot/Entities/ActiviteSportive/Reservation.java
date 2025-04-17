@@ -1,10 +1,13 @@
 package tn.esprit.pidevspringboot.Entities.ActiviteSportive;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import tn.esprit.pidevspringboot.Entities.User.User;
 
 import java.util.Date;
@@ -16,6 +19,7 @@ import java.util.Date;
 @NoArgsConstructor
 @ToString
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@CrossOrigin(origins = "http://localhost:4200")
 
 public class Reservation {
 
@@ -30,7 +34,8 @@ public class Reservation {
 
     @ManyToOne
     @JoinColumn(name = "id_seance")
-    @JsonIgnore
+    @JsonIgnoreProperties({"reservations"})
+// éviter boucle infinie
     Seance_sport seance;
 
     @ManyToOne

@@ -1,5 +1,6 @@
 package tn.esprit.pidevspringboot.Entities.ActiviteSportive;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -37,15 +38,26 @@ public class Activite {
     @Size(max = 500, message = "La description ne doit pas dépasser 500 caractères.")
 
      String description;
-    String imageUrl;
-
+    @Lob
+    @Column(name = "image", columnDefinition = "LONGBLOB")
+    private byte[] image;
     @Enumerated(EnumType.STRING)
     StatutActivite statutActivite;
     @ManyToMany(mappedBy = "activite", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("activite")
     Set<User>user;
-    @OneToMany(mappedBy = "activite")
+    @OneToMany(mappedBy = "activite", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore // ⛔ important !
+
     Set<Seance_sport> seance_sports;
+    @Transient
+    private int nbReservationsSemaine;
+    public int getNbReservationsSemaine() {
+        return nbReservationsSemaine;
+    }
+    public void setNbReservationsSemaine(int nbReservationsSemaine) {
+        this.nbReservationsSemaine = nbReservationsSemaine;
+    }
 
     public long getId() {
         return id;
@@ -87,12 +99,12 @@ public class Activite {
         this.seance_sports = seance_sports;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
+    public byte[] getImage() {
+        return image;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 
     public StatutActivite getStatutActivite() {

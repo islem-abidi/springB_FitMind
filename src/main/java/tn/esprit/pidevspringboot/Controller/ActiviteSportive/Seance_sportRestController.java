@@ -52,6 +52,9 @@ public class Seance_sportRestController {
             @PathVariable Long activiteId,
             @RequestBody Seance_sport seance_sport) {
 
+        System.out.println("➡️ Ajout de séance : " + seance_sport);
+        System.out.println("🔗 Activité reçue : " + seance_sport.getActivite());
+
         Activite activite = activiteRepository.findById(activiteId)
                 .orElseThrow(() -> new RuntimeException("Activité introuvable avec ID : " + activiteId));
 
