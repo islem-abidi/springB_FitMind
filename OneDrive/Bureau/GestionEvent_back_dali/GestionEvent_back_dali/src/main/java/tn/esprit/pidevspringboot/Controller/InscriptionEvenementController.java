@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.pidevspringboot.Entities.Evenement.InscriptionEvenement;
 import tn.esprit.pidevspringboot.Service.IInscriptionEvenementService;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,6 +27,8 @@ public class InscriptionEvenementController {
     @Autowired
     IInscriptionEvenementService iInscriptionEvenementService;
 
+    @Value("${app.upload.dir:${user.dir}/uploads}")
+    private String uploadDir; // ✅ AJOUT ICI
     @Operation(description = "Affichage de toutes les inscriptions")
     @GetMapping("/retrieveAllInscriptions")
     public List<InscriptionEvenement> afficherInscriptions() {
@@ -98,7 +101,7 @@ public class InscriptionEvenementController {
                 return ResponseEntity.notFound().build();
             }
 
-            Path path = Paths.get(System.getProperty("user.home") + "/uploads/qrcodes/" + inscription.getQrCodePath());
+            Path path = Paths.get(uploadDir + "/qrcodes/" + inscription.getQrCodePath());
 
             if (!Files.exists(path)) {
                 System.err.println("❌ Fichier QR code introuvable : " + path);
@@ -127,7 +130,8 @@ public class InscriptionEvenementController {
                 return ResponseEntity.notFound().build();
             }
 
-            Path path = Paths.get(System.getProperty("user.home") + "/uploads/tickets/" + inscription.getTicketPdfPath());
+            Path path = Paths.get(uploadDir + "/tickets/" + inscription.getTicketPdfPath());
+            System.out.println("➡️ Tentative de chargement du fichier : " + path.toAbsolutePath());
 
             if (!Files.exists(path)) {
                 System.err.println("❌ Fichier ticket introuvable : " + path);
@@ -136,10 +140,13 @@ public class InscriptionEvenementController {
 
             org.springframework.core.io.Resource resource = new UrlResource(path.toUri());
 
+
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + inscription.getTicketPdfPath() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + inscription.getTicketPdfPath() + "\"")
+                    .header(HttpHeaders.CACHE_CONTROL, "must-revalidate, post-check=0, pre-check=0")
                     .body(resource);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();

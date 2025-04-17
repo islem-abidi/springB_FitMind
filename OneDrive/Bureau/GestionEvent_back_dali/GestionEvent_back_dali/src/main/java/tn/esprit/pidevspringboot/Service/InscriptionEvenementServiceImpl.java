@@ -60,29 +60,24 @@ public class InscriptionEvenementServiceImpl implements IInscriptionEvenementSer
         return false;
     }
     @Override
-    public InscriptionEvenement generateQRCode(Long inscriptionId) throws Exception {
-        InscriptionEvenement inscription = inscriptionEvenementRepository.findById(inscriptionId)
+    public InscriptionEvenement generateQRCode(Long id) throws Exception {
+        InscriptionEvenement inscription = inscriptionEvenementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
 
-        // Vérifier si l'inscription est confirmée
-        if (inscription.getStatutInscription() != StatutInscription.CONFIRMEE) {
-            throw new RuntimeException("L'inscription doit être confirmée avant de générer un QR code");
-        }
-
-        // Générer le QR Code
+        // ✅ 1. Générer le QR Code
         String qrCodePath = qrCodeService.generateQRCode(inscription);
         inscription.setQrCodePath(qrCodePath);
+        inscription.setQrCodeGenerated(true); // si tu as ce champ
 
-        // Générer le PDF
+        // ✅ 2. Générer le billet PDF
         String ticketPdfPath = qrCodeService.generateTicketPDF(inscription, qrCodePath);
         inscription.setTicketPdfPath(ticketPdfPath);
 
-        // Marquer que le QR code a été généré
-        inscription.setQrCodeGenerated(true);
-
-        // Sauvegarder les modifications
+        // ✅ 3. Sauvegarder les chemins
         return inscriptionEvenementRepository.save(inscription);
     }
+
+
 
     @Override
     public boolean canCancelInscription(Long inscriptionId) {
