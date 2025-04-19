@@ -16,14 +16,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "inscription_evenement",
-uniqueConstraints = @UniqueConstraint(columnNames = {"id_user", "id_evenement"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"id_user", "id_evenement"}))
 
 public class InscriptionEvenement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idInscription;
-
-
 
     @ManyToOne
     @JoinColumn(name = "id_user", nullable = false)
@@ -31,14 +29,12 @@ public class InscriptionEvenement {
 
     @ManyToOne
     @JoinColumn(name = "id_evenement")
-    @JsonBackReference // ✅ empêche la sérialisation de l’objet "parent"
+    @JsonBackReference // ✅ empêche la sérialisation de l'objet "parent"
     private Evenement evenement;
-
-
-
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateInscription;
+
     @Column(nullable = true)
     private String qrCodePath; // Chemin du fichier QR code
 
@@ -47,6 +43,18 @@ public class InscriptionEvenement {
 
     @Column(nullable = false)
     private boolean qrCodeGenerated = false; // Indique si le QR code a été généré
+
+    // Changé de Boolean (wrapper) à boolean (primitif) pour éviter les NullPointerException
+    @Column(name = "reminder_sent", nullable = false)
+    private Boolean reminderSent = false;
+
+    public boolean isReminderSent() {
+        return reminderSent != null && reminderSent;
+    }
+
+    public void setReminderSent(boolean reminderSent) {
+        this.reminderSent = reminderSent;
+    }
 
     // Getters et setters pour les nouveaux champs
     public String getQrCodePath() {
