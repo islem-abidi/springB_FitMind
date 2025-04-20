@@ -10,4 +10,6 @@ public interface IEvenementService {
     Evenement updateEvenement(Evenement evenement); // ✅ ajoutez cette ligne
 
     void deleteEvenement(Long id);
+    List<Evenement> getRecommandations(Long idUser);
+
 }

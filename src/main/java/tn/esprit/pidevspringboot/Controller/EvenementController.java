@@ -1,12 +1,14 @@
 package tn.esprit.pidevspringboot.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.pidevspringboot.Entities.Evenement.Evenement;
+import tn.esprit.pidevspringboot.Repository.EvenementRepository;
 import tn.esprit.pidevspringboot.Service.IEvenementService;
 
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.util.List;
 @RequestMapping("/api/events")
 public class EvenementController {
 
+    @Autowired
     private final IEvenementService iEvenementService;
 
     // ✅ Dossier d’upload absolu
@@ -75,10 +78,41 @@ public class EvenementController {
     }
 
 
-    @PutMapping("/{id}")
-    public Evenement updateEvent(@PathVariable("id") Long id, @RequestBody Evenement evenement) {
-        evenement.setIdEvenement(id);
-        return iEvenementService.addEvenement(evenement);
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Evenement> updateEvent(
+            @PathVariable("id") Long id,
+            @RequestPart("event") String eventJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+
+            Evenement evenement = mapper.readValue(eventJson, Evenement.class);
+            evenement.setIdEvenement(id); // Très important !
+
+            Evenement updatedEvent = iEvenementService.updateEvenement(evenement);
+
+            // Gérer le fichier image si fourni
+            if (file != null && !file.isEmpty()) {
+                Path uploadPath = Paths.get(uploadDir);
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                String filename = updatedEvent.getIdEvenement() + ".png";
+                Path filePath = uploadPath.resolve(filename);
+                Files.copy(file.getInputStream(), filePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                updatedEvent.setImage(filename);
+                updatedEvent = iEvenementService.updateEvenement(updatedEvent);
+            }
+
+            return ResponseEntity.ok(updatedEvent);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -101,4 +135,10 @@ public class EvenementController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + id + ".png\"")
                 .body(image);
     }
+    @GetMapping("/recommendation/{idUser}")
+    public List<Evenement> getRecommendations(@PathVariable Long idUser) {
+        return iEvenementService.getRecommandations(idUser);
+    }
+
+
 }

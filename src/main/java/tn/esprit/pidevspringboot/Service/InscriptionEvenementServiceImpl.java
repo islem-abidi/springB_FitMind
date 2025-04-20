@@ -63,10 +63,12 @@ public class InscriptionEvenementServiceImpl implements IInscriptionEvenementSer
                         "</head>\n" +
                         "<body>\n" +
                         "    <div class=\"container\">\n" +
-                        "        <div class=\"header\">\n" +
-                        "            <h1>Fit<span style=\"color: #d9edf7;\">Mind</span></h1>\n" +
-                        "            <h2>Confirmation d'inscription</h2>\n" +
-                        "        </div>\n" +
+                        "<div class=\"header\">\n" +
+                        "    <img src=\"http://localhost:8081/logo.png\" alt=\"FitMind Logo\" style=\"max-height: 70px; margin-bottom: 10px; border-radius: 10px;\"/>\n" +
+                        "    <h1>Fit<span style=\"color: #d9edf7;\">Mind</span></h1>\n" +
+                        "    <h2>Confirmation d'inscription</h2>\n" +
+                        "</div>\n" +
+
                         "        <div class=\"content\">\n" +
                         "            <p>Bonjour <strong>" + saved.getUser().getNom() + "</strong>,</p>\n" +
                         "            <p>Nous avons le plaisir de vous confirmer votre inscription à l'événement :</p>\n" +
@@ -99,7 +101,7 @@ public class InscriptionEvenementServiceImpl implements IInscriptionEvenementSer
                         "</html>";
 
                 System.out.println("✉️ Envoi d'e-mail à : " + email);
-                mailService.sendSimpleEmail(email, subject, content);  // On utilise la méthode existante
+                mailService.sendEmailWithInlineImage(email, subject, content);
             } catch (Exception e) {
                 System.err.println("❌ Erreur lors de l'envoi d'e-mail : " + e.getMessage());
             }
@@ -107,6 +109,7 @@ public class InscriptionEvenementServiceImpl implements IInscriptionEvenementSer
 
         return saved;
     }
+
     @Override
     public void deleteInscription(Long id) {
         inscriptionEvenementRepository.deleteById(id);
@@ -195,10 +198,12 @@ public class InscriptionEvenementServiceImpl implements IInscriptionEvenementSer
                     "</head>\n" +
                     "<body>\n" +
                     "    <div class=\"container\">\n" +
-                    "        <div class=\"header\">\n" +
-                    "            <h1>Fit<span style=\"color: #d9edf7;\">Mind</span></h1>\n" +
-                    "            <h2>Confirmation d'inscription</h2>\n" +
-                    "        </div>\n" +
+                    "<div class=\"header\">\n" +
+                    "    <img src=\"http://localhost:8081/logo.png\" alt=\"FitMind Logo\" style=\"max-height: 70px; margin-bottom: 10px; border-radius: 10px;\"/>\n" +
+                    "    <h1>Fit<span style=\"color: #d9edf7;\">Mind</span></h1>\n" +
+                    "    <h2>Confirmation d'inscription</h2>\n" +
+                    "</div>\n" +
+
                     "        <div class=\"content\">\n" +
                     "            <p>Bonjour <strong>" + inscription.getUser().getNom() + "</strong>,</p>\n" +
                     "            <p>Nous avons le plaisir de vous confirmer votre inscription à l'événement :</p>\n" +
@@ -225,12 +230,14 @@ public class InscriptionEvenementServiceImpl implements IInscriptionEvenementSer
                     "</body>\n" +
                     "</html>";
 
-            mailService.sendSimpleEmail(email, subject, htmlContent);
+            // Remplacer cette ligne
+            // mailService.sendSimpleEmail(email, subject, htmlContent);
+            // Par celle-ci pour utiliser la méthode avec support d'image intégrée
+            mailService.sendEmailWithInlineImage(email, subject, htmlContent);
         }
 
         inscriptionEvenementRepository.save(inscription);
     }
-
 
     @Override
     public Long findInscriptionIdByUserAndEvent(Long idUser, Long idEvenement) {

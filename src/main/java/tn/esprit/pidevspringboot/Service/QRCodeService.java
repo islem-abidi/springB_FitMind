@@ -27,7 +27,8 @@ public class QRCodeService {
 
     @Value("${app.upload.dir:${user.dir}/uploads}")
     private String uploadDir;
-
+    @Value("${app.base-url:http://localhost:8081}")
+    private String baseUrl;
     // Couleurs de la marque FitMind
     private static final BaseColor PRIMARY_COLOR = new BaseColor(0, 158, 96); // Vert FitMind
     private static final BaseColor SECONDARY_COLOR = new BaseColor(70, 130, 180); // Bleu acier
@@ -50,8 +51,7 @@ public class QRCodeService {
         String filePath = uploadPath + fileName;
 
         // Contenu du QR Code avec préfixe pour les apps mobiles
-        String qrContent = "http://192.168.1.11:8081/Evenement/InscriptionEvenement/downloadTicket/" + inscription.getIdInscription();
-
+        String qrContent = baseUrl + "/Evenement/InscriptionEvenement/downloadTicket/" + inscription.getIdInscription();
         // Paramètres avancés pour QR Code - niveau de correction d'erreur élevé
         Map<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H); // Niveau H = 30% de correction d'erreur

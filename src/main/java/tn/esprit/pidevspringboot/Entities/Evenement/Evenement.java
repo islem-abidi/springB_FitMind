@@ -1,6 +1,7 @@
 package tn.esprit.pidevspringboot.Entities.Evenement;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,11 +31,11 @@ public class Evenement {
     private String description;
 
     @Column(name = "date_fin", nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Africa/Tunis")
     private LocalDateTime dateFin;
 
     @Column(name = "date_evenement", nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm", timezone = "Africa/Tunis")
     private LocalDateTime dateEvenement;
 
 
@@ -63,7 +64,7 @@ public class Evenement {
     @Column(name = "image")
     private String image;
 
-    @OneToMany(mappedBy = "evenement", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "evenement", fetch = FetchType.EAGER, cascade = CascadeType.ALL , orphanRemoval = true)
     @JsonManagedReference // ✅ indique le point d’entrée de la relation
     private List<InscriptionEvenement> inscriptions;
 
