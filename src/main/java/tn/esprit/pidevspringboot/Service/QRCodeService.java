@@ -15,20 +15,24 @@ import tn.esprit.pidevspringboot.Entities.Evenement.InscriptionEvenement;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-
+import java.net.InetAddress;
+import java.net.Inet4Address;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 @Service
 public class QRCodeService {
 
     @Value("${app.upload.dir:${user.dir}/uploads}")
     private String uploadDir;
-    @Value("${app.base-url:http://localhost:8081}")
-    private String baseUrl;
+    @Value("${server.port:8081}")
+    private String serverPort;
     // Couleurs de la marque FitMind
     private static final BaseColor PRIMARY_COLOR = new BaseColor(0, 158, 96); // Vert FitMind
     private static final BaseColor SECONDARY_COLOR = new BaseColor(70, 130, 180); // Bleu acier
@@ -36,6 +40,32 @@ public class QRCodeService {
     private static final BaseColor LIGHT_BG = new BaseColor(240, 250, 240); // Fond très légèrement vert
     private static final BaseColor DARK_TEXT = new BaseColor(45, 45, 45); // Texte presque noir
     private static final BaseColor BORDER_COLOR = new BaseColor(220, 230, 220); // Bordure subtile
+
+    // Générer le QR Code avec correction d'erreur améliorée
+    private String getLocalHostLANAddress() {
+        try {
+            // Rechercher l'adresse IP non-loopback
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface iface = interfaces.nextElement();
+                // Filtrer les interfaces non actives et loopback
+                if (iface.isLoopback() || !iface.isUp())
+                    continue;
+
+                Enumeration<InetAddress> addresses = iface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    // Filtrer les IPv6 et chercher les IPv4
+                    if (addr instanceof Inet4Address) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+            return "localhost"; // Fallback
+        } catch (SocketException e) {
+            throw new RuntimeException("Impossible de déterminer l'adresse IP locale", e);
+        }
+    }
 
     // Générer le QR Code avec correction d'erreur améliorée
     public String generateQRCode(InscriptionEvenement inscription) throws Exception {
@@ -50,19 +80,22 @@ public class QRCodeService {
                 UUID.randomUUID().toString() + ".png";
         String filePath = uploadPath + fileName;
 
-        // Contenu du QR Code avec préfixe pour les apps mobiles
-        String qrContent = baseUrl + "/Evenement/InscriptionEvenement/downloadTicket/" + inscription.getIdInscription();
-        // Paramètres avancés pour QR Code - niveau de correction d'erreur élevé
-        Map<EncodeHintType, Object> hints = new HashMap<>();
-        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H); // Niveau H = 30% de correction d'erreur
-        hints.put(EncodeHintType.MARGIN, 2); // Marge réduite pour QR élégant
+        // Obtenir dynamiquement l'adresse IP
+        String localIp = getLocalHostLANAddress();
+        String dynamicBaseUrl = "http://" + localIp + ":" + serverPort;
 
-        // Générer QR code haute qualité
+        // Contenu du QR Code avec l'adresse IP dynamique
+        String qrContent = dynamicBaseUrl + "/Evenement/InscriptionEvenement/downloadTicket/" + inscription.getIdInscription();
+
+        // Reste du code de génération QR...
+        Map<EncodeHintType, Object> hints = new HashMap<>();
+        hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
+        hints.put(EncodeHintType.MARGIN, 2);
+
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 300, 300, hints);
         MatrixToImageWriter.writeToPath(bitMatrix, "PNG", Paths.get(filePath));
 
-        // Enregistrer dans l'inscription
         inscription.setQrCodePath(fileName);
         inscription.setQrCodeGenerated(true);
 

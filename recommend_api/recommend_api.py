@@ -54,7 +54,7 @@ def recommend():
     for e in candidats_sorted:
         e.pop("score", None)
 
-    print("🔥 Top 5:", [e["titre"] for e in candidats_sorted[:5]])
+    print("🔥 Top 3:", [e["titre"] for e in candidats_sorted[:5]])
     return jsonify(candidats_sorted[:3])
 
 if __name__ == '__main__':
